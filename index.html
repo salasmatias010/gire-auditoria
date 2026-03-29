@@ -509,13 +509,11 @@
 
   <div class="category-grid">
     <div class="category-card cat-agentes" onclick="showScreen('agentes')">
-      <span class="cat-icon-wrap">🏦</span>
       <span class="cat-label">Agentes</span>
       <span class="cat-sub">Locales propios</span>
-      <span class="cat-pill">2 planillas</span>
+      <span class="cat-pill">4 planillas</span>
     </div>
     <div class="category-card cat-sucursales" onclick="showScreen('sucursales')">
-      <span class="cat-icon-wrap">🏢</span>
       <span class="cat-label">Sucursales<br>Propias</span>
       <span class="cat-sub">Red interna</span>
       <span class="cat-pill">9 planillas</span>
@@ -545,6 +543,16 @@
       <div class="icon">🚛</div>
       <h3>Entrega a Transportadora</h3>
       <p>Remito de valores</p>
+    </div>
+    <div class="form-card green" onclick="openForm('agenteATM')">
+      <div class="icon">🏧</div>
+      <h3>Arqueo ATM</h3>
+      <p>Remanente + recarga</p>
+    </div>
+    <div class="form-card blue" onclick="openForm('agenteTesoro')">
+      <div class="icon">🔐</div>
+      <h3>Tesoro ATM</h3>
+      <p>Aptos / no aptos</p>
     </div>
   </div>
   <div class="history-section">
@@ -840,7 +848,90 @@
   </div>
 </div>
 
-<!-- ══════ FORM: ARQUEO ══════ -->
+<!-- ══════ FORM: ARQUEO ATM (AGENTES) ══════ -->
+<div class="screen" id="screen-agenteATM">
+  <div class="form-header">
+    <button class="btn-back" onclick="showScreen('agentes');renderHistoryAgentes()">←</button>
+    <h2>Arqueo ATM</h2>
+  </div>
+  <div class="form-body">
+    <div class="form-group"><label>Agente</label><input type="text" id="aat-agente" placeholder="Número de agente" inputmode="numeric"></div>
+    <div class="form-group"><label>ID ATM</label><input type="text" id="aat-id" placeholder="ID del ATM" inputmode="numeric"></div>
+    <div class="row-2">
+      <div class="form-group"><label>Fecha</label><input type="date" id="aat-fecha"></div>
+      <div class="form-group"><label>Hora</label><input type="time" id="aat-hora"></div>
+    </div>
+    <div class="detail-section-title">REMANENTE Y PURGADOS</div>
+    <div id="aat-rem-wrap"></div>
+    <div class="totals-box" style="margin-bottom:16px">
+      <div class="trow"><span class="tlabel">TOTAL REMANENTE</span><span class="tval" id="aat-rem-total">$0,00</span></div>
+    </div>
+    <div class="detail-section-title">RECARGA</div>
+    <div id="aat-rec-wrap"></div>
+    <div class="totals-box">
+      <div class="trow"><span class="tlabel">TOTAL RECARGA</span><span class="tval" id="aat-rec-total">$0,00</span></div>
+    </div>
+    <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="aat-obs" placeholder="Observaciones..."></textarea></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-aat"></canvas><span class="sig-placeholder" id="ph-auditor-aat">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-aat','ph-auditor-aat')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="aat-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditado</label>
+      <div class="sig-wrapper"><canvas id="sig-auditado-aat"></canvas><span class="sig-placeholder" id="ph-auditado-aat">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-aat','ph-auditado-aat')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="aat-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+  </div>
+  <div class="form-footer">
+    <button class="btn-secondary" onclick="showScreen('agentes');renderHistoryAgentes()">Cancelar</button>
+    <button class="btn-primary" onclick="saveAgenteATM()">Guardar y PDF</button>
+  </div>
+</div>
+
+<!-- ══════ FORM: TESORO ATM (AGENTES) ══════ -->
+<div class="screen" id="screen-agenteTesoro">
+  <div class="form-header">
+    <button class="btn-back" onclick="showScreen('agentes');renderHistoryAgentes()">←</button>
+    <h2>Tesoro ATM</h2>
+  </div>
+  <div class="form-body">
+    <div class="form-group"><label>Agente</label><input type="text" id="ate-agente" placeholder="Número de agente" inputmode="numeric"></div>
+    <div class="row-2">
+      <div class="form-group"><label>Fecha</label><input type="date" id="ate-fecha"></div>
+      <div class="form-group"><label>Hora</label><input type="time" id="ate-hora"></div>
+    </div>
+    <div class="detail-section-title">APTOS ATM</div>
+    <div id="ate-aptos-wrap"></div>
+    <div class="totals-box" style="margin-bottom:16px">
+      <div class="trow"><span class="tlabel">TOTAL APTOS</span><span class="tval" id="ate-aptos-total">$0,00</span></div>
+    </div>
+    <div class="detail-section-title">NO APTOS ATM</div>
+    <div id="ate-noaptos-wrap"></div>
+    <div class="totals-box">
+      <div class="trow"><span class="tlabel">TOTAL NO APTOS</span><span class="tval" id="ate-noaptos-total">$0,00</span></div>
+    </div>
+    <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="ate-obs" placeholder="Observaciones..."></textarea></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-ate"></canvas><span class="sig-placeholder" id="ph-auditor-ate">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-ate','ph-auditor-ate')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="ate-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditado</label>
+      <div class="sig-wrapper"><canvas id="sig-auditado-ate"></canvas><span class="sig-placeholder" id="ph-auditado-ate">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-ate','ph-auditado-ate')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="ate-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+  </div>
+  <div class="form-footer">
+    <button class="btn-secondary" onclick="showScreen('agentes');renderHistoryAgentes()">Cancelar</button>
+    <button class="btn-primary" onclick="saveAgenteTesoro()">Guardar y PDF</button>
+  </div>
+</div>
 
 <!-- ══════ FORM: ARQUEO ══════ -->
 <div class="screen" id="screen-suc-tesoroatm">
@@ -1412,24 +1503,24 @@ function saveEntrega() {
 // ══ HISTORY AGENTES ══
 function renderHistoryAgentes() {
   const list = document.getElementById('history-list-agentes');
-  const records = getRecords().filter(r => r.type === 'arqueo' || r.type === 'entrega');
+  const records = getRecords().filter(r => r.type === 'arqueo' || r.type === 'entrega' || r.type === 'agenteATM' || r.type === 'agenteTesoro');
   if (!records.length) {
     list.innerHTML = '<div class="empty-state"><div class="es-icon">📂</div><p>No hay registros aún.</p></div>';
     return;
   }
   list.innerHTML = records.slice(0, 20).map(r => {
-    const typeLabel = r.type === 'arqueo' ? '🧾 Arqueo' : '🚛 Entrega';
+    const typeLabel = r.type === 'arqueo' ? '🧾 Arqueo' : r.type === 'entrega' ? '🚛 Entrega' : r.type === 'agenteATM' ? '🏧 Arqueo ATM' : '🔐 Tesoro ATM';
     const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
-    let badgeClass = 'badge-pending', badgeText = 'pendiente';
+    let badgeClass = 'badge-ok', badgeText = 'OK';
     if (r.type === 'arqueo') {
       const dif = parseFloat(r.diferencia);
       if (isNaN(dif)) { badgeClass = 'badge-pending'; badgeText = 'sin dif.'; }
       else if (dif === 0) { badgeClass = 'badge-ok'; badgeText = 'OK'; }
       else { badgeClass = 'badge-diff'; badgeText = (dif > 0 ? '+' : '') + '$' + fmt(Math.abs(dif)); }
-    } else {
+    } else if (r.type === 'entrega') {
       badgeClass = 'badge-ok'; badgeText = '$' + fmt(parseFloat(r.total) || 0);
     }
-    const name = r.type === 'arqueo' ? r.cajero : `Agente ${r.agente}`;
+    const name = r.type === 'arqueo' ? r.cajero : r.type === 'entrega' ? `Ag.${r.agente}` : `Ag.${r.agente}`;
     return `<div class="history-item" onclick="openDetail('${r.id}')">
       <div class="hi-left">
         <h4>${typeLabel} · ${name}</h4>
@@ -1711,7 +1802,176 @@ function showToast(msg, type = 'info') {
   t._timer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ══ SUCURSALES ══
+// ══ AGENTE ATM / TESORO ══
+function openForm(type) {
+  if (type === 'agenteATM' || type === 'agenteTesoro') {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    showScreen(type);
+    setTimeout(() => {
+      if (type === 'agenteATM') {
+        document.getElementById('aat-fecha').value = dateStr;
+        ['aat-agente','aat-id','aat-obs','aat-auditor-nombre','aat-auditado-nombre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+        buildBilletesGrid('aat-rem-wrap', [...BILLETES_ATM,...BILLETES_ATM], 'aat-rem', 'calcAgenteATM()', true);
+        buildBilletesGrid('aat-rec-wrap', BILLETES_ATM, 'aat-rec', 'calcAgenteATM()');
+        initSig('sig-auditor-aat','ph-auditor-aat');
+        initSig('sig-auditado-aat','ph-auditado-aat');
+      } else {
+        document.getElementById('ate-fecha').value = dateStr;
+        ['ate-agente','ate-obs','ate-auditor-nombre','ate-auditado-nombre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+        buildBilletesGrid('ate-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-aptos', 'calcAgenteTesoro()');
+        buildBilletesGrid('ate-noaptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-noaptos', 'calcAgenteTesoro()');
+        initSig('sig-auditor-ate','ph-auditor-ate');
+        initSig('sig-auditado-ate','ph-auditado-ate');
+      }
+    }, 100);
+    return;
+  }
+  setDefaults(type);
+  showScreen(type);
+  setTimeout(() => {
+    initSig('sig-auditor-' + type, 'ph-auditor-' + type);
+    initSig('sig-auditado-' + type, 'ph-auditado-' + type);
+  }, 100);
+}
+
+function calcAgenteATM() {
+  const rem = sumBilletes('aat-rem', [...BILLETES_ATM,...BILLETES_ATM], true);
+  document.getElementById('aat-rem-total').textContent = '$'+fmt(rem);
+  const rec = sumBilletes('aat-rec', BILLETES_ATM);
+  document.getElementById('aat-rec-total').textContent = '$'+fmt(rec);
+}
+
+function calcAgenteTesoro() {
+  const apt = sumBilletes('ate-aptos', [20000,10000,2000,1000,500,200,100]);
+  document.getElementById('ate-aptos-total').textContent = '$'+fmt(apt);
+  const noapt = sumBilletes('ate-noaptos', [20000,10000,2000,1000,500,200,100]);
+  document.getElementById('ate-noaptos-total').textContent = '$'+fmt(noapt);
+}
+
+function saveAgenteATM() {
+  const agente = document.getElementById('aat-agente').value.trim();
+  if (!agente) { showToast('Completá el número de agente', 'error'); return; }
+  const record = {
+    id: Date.now().toString(), type: 'agenteATM',
+    agente, idAtm: document.getElementById('aat-id').value.trim(),
+    fecha: document.getElementById('aat-fecha').value,
+    hora: document.getElementById('aat-hora').value,
+    remBilletes: getBilletesData('aat-rem', [...BILLETES_ATM,...BILLETES_ATM], true),
+    recBilletes: getBilletesData('aat-rec', BILLETES_ATM),
+    obs: document.getElementById('aat-obs').value.trim(),
+    auditorNombre: document.getElementById('aat-auditor-nombre').value.trim(),
+    auditadoNombre: document.getElementById('aat-auditado-nombre').value.trim(),
+    sigAuditor: getSigData('sig-auditor-aat'),
+    sigAuditado: getSigData('sig-auditado-aat'),
+    createdAt: new Date().toISOString()
+  };
+  const records = getRecords(); records.unshift(record); saveRecords(records);
+  showToast('✓ Guardado correctamente', 'success');
+  setTimeout(() => { showScreen('agentes'); renderHistoryAgentes(); generateAgenteATMPDF(record); }, 600);
+}
+
+function saveAgenteTesoro() {
+  const agente = document.getElementById('ate-agente').value.trim();
+  if (!agente) { showToast('Completá el número de agente', 'error'); return; }
+  const record = {
+    id: Date.now().toString(), type: 'agenteTesoro',
+    agente,
+    fecha: document.getElementById('ate-fecha').value,
+    hora: document.getElementById('ate-hora').value,
+    aptosBilletes: getBilletesData('ate-aptos', [20000,10000,2000,1000,500,200,100]),
+    noAptosBilletes: getBilletesData('ate-noaptos', [20000,10000,2000,1000,500,200,100]),
+    obs: document.getElementById('ate-obs').value.trim(),
+    auditorNombre: document.getElementById('ate-auditor-nombre').value.trim(),
+    auditadoNombre: document.getElementById('ate-auditado-nombre').value.trim(),
+    sigAuditor: getSigData('sig-auditor-ate'),
+    sigAuditado: getSigData('sig-auditado-ate'),
+    createdAt: new Date().toISOString()
+  };
+  const records = getRecords(); records.unshift(record); saveRecords(records);
+  showToast('✓ Guardado correctamente', 'success');
+  setTimeout(() => { showScreen('agentes'); renderHistoryAgentes(); generateAgenteTesoroPDF(record); }, 600);
+}
+
+function generateAgenteATMPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W=210, m=20; let y=20;
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('gire', m, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150); doc.text('Soluciones de Pago', m+12, y); doc.setTextColor(0); y+=8;
+  doc.setFillColor(240,240,240); doc.rect(m, y, W-2*m, 8, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('ARQUEO ATM', W/2, y+5.5, {align:'center'}); y+=14;
+  doc.setFontSize(10);
+  [['AGENTE:', r.agente],['ID ATM:', r.idAtm],['FECHA:', r.fecha?r.fecha.split('-').reverse().join('/'):'—'],['HORA:', r.hora]].forEach(([l,v])=>{ doc.setFont('helvetica','bold'); doc.text(l,m,y); doc.setFont('helvetica','normal'); doc.text(v||'',m+28,y); y+=7; });
+  y+=4;
+  function billetesTable(data, title) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(title, m, y); y+=8;
+    doc.setFillColor(235,235,235); doc.rect(m,y-5,W-2*m,8,'F');
+    doc.setFontSize(9); doc.text('DENOMINACIÓN',m+3,y); doc.text('CANTIDAD',W/2-10,y); doc.text('IMPORTE $',W-m-3,y,{align:'right'}); y+=8;
+    data.forEach(({label,qty,imp})=>{ if(qty===0) return; doc.setFont('helvetica','normal'); doc.setDrawColor(220); doc.rect(m,y-5,W-2*m,7); doc.text(label,m+3,y); doc.text(String(qty),W/2-10,y); doc.text('$'+fmt(imp),W-m-3,y,{align:'right'}); y+=7; }); y+=4;
+  }
+  billetesTable(r.remBilletes, 'REMANENTE Y PURGADOS');
+  const remTotal = r.remBilletes.reduce((a,b)=>a+b.imp,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL REMANENTE',m+3,y); doc.text('$'+fmt(remTotal),W-m-3,y,{align:'right'}); y+=12;
+  billetesTable(r.recBilletes, 'RECARGA');
+  const recTotal = r.recBilletes.reduce((a,b)=>a+b.imp,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL RECARGA',m+3,y); doc.text('$'+fmt(recTotal),W-m-3,y,{align:'right'}); y+=12;
+  if(r.obs){ doc.setFont('helvetica','bold'); doc.text('Observaciones:',m,y); y+=6; doc.setFont('helvetica','normal'); doc.text(r.obs,m,y); y+=10; }
+  y+=4; doc.setFontSize(8); doc.setTextColor(120);
+  doc.text('Los valores indicados precedentemente fueron arqueados en mi presencia',m,y); y+=5;
+  doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.',m,y); y+=10; doc.setTextColor(0);
+  const sigW=75,sigH=25,col1=m,col2=W-m-sigW;
+  doc.setDrawColor(180); doc.line(col1,y+sigH,col1+sigW,y+sigH); doc.line(col2,y+sigH,col2+sigW,y+sigH);
+  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'PNG',col1,y,sigW,sigH);}catch(e){}}
+  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'PNG',col2,y,sigW,sigH);}catch(e){}}
+  y+=sigH+3; doc.setFontSize(8);
+  doc.text('Firma, DNI y aclaración del auditor',col1,y); doc.text('Firma, DNI y aclaración del auditado',col2,y); y+=5;
+  if(r.auditorNombre) doc.text(r.auditorNombre,col1,y);
+  if(r.auditadoNombre) doc.text(r.auditadoNombre,col2,y);
+  doc.save(`ArqueoATM_Ag${r.agente}_${r.fecha||'fecha'}.pdf`);
+  showToast('✓ PDF generado','success');
+}
+
+function generateAgenteTesoroPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W=210, m=20; let y=20;
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('gire',m,y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150); doc.text('Soluciones de Pago',m+12,y); doc.setTextColor(0); y+=8;
+  doc.setFillColor(240,240,240); doc.rect(m,y,W-2*m,8,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('ARQUEO DEL TESORO ATM',W/2,y+5.5,{align:'center'}); y+=14;
+  doc.setFontSize(10);
+  [['AGENTE:',r.agente],['FECHA:',r.fecha?r.fecha.split('-').reverse().join('/'):'—'],['HORA:',r.hora]].forEach(([l,v])=>{ doc.setFont('helvetica','bold'); doc.text(l,m,y); doc.setFont('helvetica','normal'); doc.text(v||'',m+22,y); y+=7; });
+  y+=4;
+  function billetesTable(data, title) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(title,m,y); y+=8;
+    doc.setFillColor(235,235,235); doc.rect(m,y-5,W-2*m,8,'F');
+    doc.setFontSize(9); doc.text('DENOMINACIÓN',m+3,y); doc.text('CANTIDAD',W/2-10,y); doc.text('IMPORTE $',W-m-3,y,{align:'right'}); y+=8;
+    data.forEach(({label,qty,imp})=>{ if(qty===0) return; doc.setFont('helvetica','normal'); doc.setDrawColor(220); doc.rect(m,y-5,W-2*m,7); doc.text(label,m+3,y); doc.text(String(qty),W/2-10,y); doc.text('$'+fmt(imp),W-m-3,y,{align:'right'}); y+=7; }); y+=4;
+  }
+  billetesTable(r.aptosBilletes,'APTOS ATM');
+  const aptTotal=r.aptosBilletes.reduce((a,b)=>a+b.imp,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL APTOS',m+3,y); doc.text('$'+fmt(aptTotal),W-m-3,y,{align:'right'}); y+=12;
+  billetesTable(r.noAptosBilletes,'NO APTOS ATM');
+  const noAptTotal=r.noAptosBilletes.reduce((a,b)=>a+b.imp,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL NO APTOS',m+3,y); doc.text('$'+fmt(noAptTotal),W-m-3,y,{align:'right'}); y+=12;
+  if(r.obs){ doc.setFont('helvetica','bold'); doc.text('Observaciones:',m,y); y+=6; doc.setFont('helvetica','normal'); doc.text(r.obs,m,y); y+=10; }
+  y+=4; doc.setFontSize(8); doc.setTextColor(120);
+  doc.text('Los valores indicados precedentemente fueron arqueados en mi presencia',m,y); y+=5;
+  doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.',m,y); y+=10; doc.setTextColor(0);
+  const sigW=75,sigH=25,col1=m,col2=W-m-sigW;
+  doc.setDrawColor(180); doc.line(col1,y+sigH,col1+sigW,y+sigH); doc.line(col2,y+sigH,col2+sigW,y+sigH);
+  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'PNG',col1,y,sigW,sigH);}catch(e){}}
+  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'PNG',col2,y,sigW,sigH);}catch(e){}}
+  y+=sigH+3; doc.setFontSize(8);
+  doc.text('Firma, DNI y aclaración del auditor',col1,y); doc.text('Firma, DNI y aclaración del auditado',col2,y); y+=5;
+  if(r.auditorNombre) doc.text(r.auditorNombre,col1,y);
+  if(r.auditadoNombre) doc.text(r.auditadoNombre,col2,y);
+  doc.save(`TesoroATM_Ag${r.agente}_${r.fecha||'fecha'}.pdf`);
+  showToast('✓ PDF generado','success');
+}
+
+
 const BILLETES_STD = [20000,10000,2000,1000,500,200,100,50,20,10];
 const BILLETES_ATM = [20000,10000,2000,1000,500];
 const BILLETES_ATM_PURGADOS = ['PURGADOS $20.000','PURGADOS $10.000','PURGADOS $2.000','PURGADOS $1.000','PURGADOS $500'];
