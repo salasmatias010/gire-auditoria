@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -649,6 +649,12 @@
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sc-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="sc-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('sc-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="sc-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSC(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-cambio"></canvas><span class="sig-placeholder" id="ph-auditor-suc-cambio">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-cambio','ph-auditor-suc-cambio')">BORRAR</button></div>
@@ -736,6 +742,12 @@
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sr-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="sr-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('sr-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="sr-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSR(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-reserva"></canvas><span class="sig-placeholder" id="ph-auditor-suc-reserva">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-reserva','ph-auditor-suc-reserva')">BORRAR</button></div>
@@ -786,6 +798,12 @@
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="scs-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="scs-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('scs-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="scs-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSCS(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-cajasuc"></canvas><span class="sig-placeholder" id="ph-auditor-suc-cajasuc">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-cajasuc','ph-auditor-suc-cajasuc')">BORRAR</button></div>
@@ -830,6 +848,12 @@
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="satm-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="satm-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('satm-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="satm-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSATM(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-atm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-atm">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-atm','ph-auditor-suc-atm')">BORRAR</button></div>
@@ -873,6 +897,12 @@
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="aat-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="aat-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('aat-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="aat-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosAAT(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-aat"></canvas><span class="sig-placeholder" id="ph-auditor-aat">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-aat','ph-auditor-aat')">BORRAR</button></div>
@@ -914,6 +944,12 @@
       <div class="trow"><span class="tlabel">TOTAL NO APTOS</span><span class="tval" id="ate-noaptos-total">$0,00</span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="ate-obs" placeholder="Observaciones..."></textarea></div>
+    <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="ate-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('ate-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="ate-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosATE(event)">
+    </div>
     <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-ate"></canvas><span class="sig-placeholder" id="ph-auditor-ate">✍ Firmar aquí</span></div>
@@ -957,6 +993,12 @@
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="ste-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="ste-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('ste-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="ste-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSTE(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-tesoroatm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-tesoroatm">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-tesoroatm','ph-auditor-suc-tesoroatm')">BORRAR</button></div>
@@ -997,6 +1039,12 @@
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="sra-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="sra-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('sra-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="sra-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSRA(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-remesaatm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-remesaatm">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-remesaatm','ph-auditor-suc-remesaatm')">BORRAR</button></div>
@@ -1035,6 +1083,12 @@
     <div class="form-group" style="margin-top:16px"><label>Lugar de Resguardo de los Valores</label><input type="text" id="srb-lugar" placeholder="Descripción del lugar"></div>
     <div class="form-group"><label>Observaciones</label><textarea id="srb-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="srb-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('srb-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="srb-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSRB(event)">
+    </div>
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-remesabanco"></canvas><span class="sig-placeholder" id="ph-auditor-suc-remesabanco">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-remesabanco','ph-auditor-suc-remesabanco')">BORRAR</button></div>
@@ -1072,6 +1126,12 @@
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sd-dif">—</span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="sd-obs" placeholder="Observaciones..."></textarea></div>
+    <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="sd-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('sd-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="sd-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSD(event)">
+    </div>
     <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-depositos"></canvas><span class="sig-placeholder" id="ph-auditor-suc-depositos">✍ Firmar aquí</span></div>
@@ -1129,6 +1189,12 @@
       <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:13px;letter-spacing:0;color:var(--text)"><input type="checkbox" id="sseg-c16"> Números de emergencia visibles</label>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sseg-obs" placeholder="Observaciones..."></textarea></div>
+    <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="sseg-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('sseg-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="sseg-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSSEG(event)">
+    </div>
     <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper"><canvas id="sig-auditor-suc-seguridad"></canvas><span class="sig-placeholder" id="ph-auditor-suc-seguridad">✍ Firmar aquí</span></div>
@@ -1201,6 +1267,13 @@
     <div class="form-group">
       <label>Observaciones</label>
       <textarea id="a-obs" placeholder="Sin diferencia / sobrante / faltante..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="a-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('a-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="a-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosArqueo(event)">
     </div>
 
     <div class="form-group">
@@ -1277,6 +1350,13 @@
     </div>
 
     <div class="form-group">
+      <label>📷 Fotos</label>
+      <div id="e-fotos-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-sm" style="width:100%" onclick="document.getElementById('e-foto-input').click()">📷 SACAR / ADJUNTAR FOTO</button>
+      <input type="file" id="e-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosEntrega(event)">
+    </div>
+
+    <div class="form-group">
       <label>Firma del Auditor</label>
       <div class="sig-wrapper">
         <canvas id="sig-auditor-entrega"></canvas>
@@ -1334,6 +1414,11 @@
 // ══ STATE ══
 let currentDetailId = null;
 let deferredPrompt = null;
+let aFotos = [];
+let eFotos = [];
+let scFotos = [], srFotos = [], scsFotos = [], satmFotos = [];
+let aatFotos = [], ateFotos = [], steFotos = [], sraFotos = [];
+let srbFotos = [], sdFotos = [], ssegFotos = [];
 
 // ══ STORAGE ══
 function getRecords() {
@@ -1362,8 +1447,9 @@ function setDefaults(type) {
   const dateStr = now.toISOString().split('T')[0];
 
   if (type === 'arqueo') {
+    aFotos = [];
+    const fw = document.getElementById('a-fotos-wrap'); if(fw) fw.innerHTML = '';
     document.getElementById('a-fecha').value = dateStr;
-    
     document.getElementById('a-dif-display').textContent = '—';
     document.getElementById('a-dif-display').className = 'tval';
     ['a-agente','a-cajero','a-puesto','a-recontado','a-cierre','a-obs','a-auditor-nombre','a-auditado-nombre'].forEach(id => {
@@ -1371,13 +1457,100 @@ function setDefaults(type) {
       if (el) el.value = '';
     });
   } else {
+    eFotos = [];
+    const fw = document.getElementById('e-fotos-wrap'); if(fw) fw.innerHTML = '';
     document.getElementById('e-fecha').value = dateStr;
-    
     ['e-agente','e-remito','e-total','e-obs','e-auditor-nombre','e-auditado-nombre'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
   }
+}
+
+function handleFotosArqueo(event) {
+  Array.from(event.target.files).forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => { aFotos.push(e.target.result); renderFotosArqueo(); };
+    reader.readAsDataURL(f);
+  });
+}
+function renderFotosArqueo() {
+  const wrap = document.getElementById('a-fotos-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = aFotos.map((src,i) => `
+    <div style="position:relative;width:80px;height:80px">
+      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <button onclick="aFotos.splice(${i},1);renderFotosArqueo()" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">✕</button>
+    </div>`).join('');
+}
+
+function handleFotosEntrega(event) {
+  Array.from(event.target.files).forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => { eFotos.push(e.target.result); renderFotosEntrega(); };
+    reader.readAsDataURL(f);
+  });
+}
+function renderFotosEntrega() {
+  const wrap = document.getElementById('e-fotos-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = eFotos.map((src,i) => `
+    <div style="position:relative;width:80px;height:80px">
+      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <button onclick="eFotos.splice(${i},1);renderFotosEntrega()" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">✕</button>
+    </div>`).join('');
+}
+
+// ── Generic foto handler factory ──
+function makeHandlers(arr, wrapId, renderFn) {
+  return function(event) {
+    Array.from(event.target.files).forEach(f => {
+      const reader = new FileReader();
+      reader.onload = e => { arr.push(e.target.result); renderFn(); };
+      reader.readAsDataURL(f);
+    });
+  };
+}
+function renderFotosGeneric(arr, wrapId) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = arr.map((src,i) => `
+    <div style="position:relative;width:80px;height:80px">
+      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <button onclick="${arr === scFotos?'scFotos':arr===srFotos?'srFotos':arr===scsFotos?'scsFotos':arr===satmFotos?'satmFotos':arr===aatFotos?'aatFotos':arr===ateFotos?'ateFotos':arr===steFotos?'steFotos':arr===sraFotos?'sraFotos':arr===srbFotos?'srbFotos':arr===sdFotos?'sdFotos':'ssegFotos'}.splice(${i},1);renderFotosGeneric(${arr === scFotos?'scFotos':arr===srFotos?'srFotos':arr===scsFotos?'scsFotos':arr===satmFotos?'satmFotos':arr===aatFotos?'aatFotos':arr===ateFotos?'ateFotos':arr===steFotos?'steFotos':arr===sraFotos?'sraFotos':arr===srbFotos?'srbFotos':arr===sdFotos?'sdFotos':'ssegFotos'},'${wrapId}')" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">✕</button>
+    </div>`).join('');
+}
+
+function handleFotosSC(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{scFotos.push(ev.target.result);renderFG(scFotos,'sc-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSR(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{srFotos.push(ev.target.result);renderFG(srFotos,'sr-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSCS(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{scsFotos.push(ev.target.result);renderFG(scsFotos,'scs-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSATM(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{satmFotos.push(ev.target.result);renderFG(satmFotos,'satm-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosAAT(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{aatFotos.push(ev.target.result);renderFG(aatFotos,'aat-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosATE(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{ateFotos.push(ev.target.result);renderFG(ateFotos,'ate-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSTE(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{steFotos.push(ev.target.result);renderFG(steFotos,'ste-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSRA(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{sraFotos.push(ev.target.result);renderFG(sraFotos,'sra-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSRB(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{srbFotos.push(ev.target.result);renderFG(srbFotos,'srb-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSD(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{sdFotos.push(ev.target.result);renderFG(sdFotos,'sd-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSSEG(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{ssegFotos.push(ev.target.result);renderFG(ssegFotos,'sseg-fotos-wrap');};r.readAsDataURL(f);});}
+
+const FOTO_MAP = {
+  'sc-fotos-wrap':scFotos,'sr-fotos-wrap':srFotos,'scs-fotos-wrap':scsFotos,
+  'satm-fotos-wrap':satmFotos,'aat-fotos-wrap':aatFotos,'ate-fotos-wrap':ateFotos,
+  'ste-fotos-wrap':steFotos,'sra-fotos-wrap':sraFotos,'srb-fotos-wrap':srbFotos,
+  'sd-fotos-wrap':sdFotos,'sseg-fotos-wrap':ssegFotos
+};
+function renderFG(arr, wrapId) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = arr.map((src,i) => `
+    <div style="position:relative;width:80px;height:80px">
+      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <button onclick="removeFoto('${wrapId}',${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>`).join('');
+}
+function removeFoto(wrapId, i) {
+  const arr = FOTO_MAP[wrapId]; if(!arr) return;
+  arr.splice(i,1); renderFG(arr, wrapId);
 }
 
 // ══ CALC DIFERENCIA ══
@@ -1437,7 +1610,16 @@ function clearSig(canvasId, phId) {
 
 function getSigData(canvasId) {
   const canvas = document.getElementById(canvasId);
-  return canvas._hasSig && canvas._hasSig() ? canvas.toDataURL('image/png') : null;
+  if (!canvas || !canvas._hasSig || !canvas._hasSig()) return null;
+  // Create a new canvas with white background to fix transparency in PDF
+  const offscreen = document.createElement('canvas');
+  offscreen.width = canvas.width;
+  offscreen.height = canvas.height;
+  const ctx = offscreen.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, offscreen.width, offscreen.height);
+  ctx.drawImage(canvas, 0, 0);
+  return offscreen.toDataURL('image/jpeg', 0.95);
 }
 
 // ══ SAVE ARQUEO ══
@@ -1461,6 +1643,7 @@ function saveArqueo() {
     auditadoNombre: document.getElementById('a-auditado-nombre').value.trim(),
     sigAuditor: getSigData('sig-auditor-arqueo'),
     sigAuditado: getSigData('sig-auditado-arqueo'),
+    fotos: [...aFotos],
     createdAt: new Date().toISOString()
   };
 
@@ -1490,6 +1673,7 @@ function saveEntrega() {
     auditadoNombre: document.getElementById('e-auditado-nombre').value.trim(),
     sigAuditor: getSigData('sig-auditor-entrega'),
     sigAuditado: getSigData('sig-auditado-entrega'),
+    fotos: [...eFotos],
     createdAt: new Date().toISOString()
   };
 
@@ -1721,6 +1905,14 @@ function generateArqueoPDF(r) {
   if (r.auditorNombre) doc.text(r.auditorNombre, col1, y);
   if (r.auditadoNombre) doc.text(r.auditadoNombre, col2, y);
 
+  if (r.fotos && r.fotos.length) {
+    doc.addPage(); let yf = 20;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf += 10;
+    r.fotos.forEach(src => {
+      try { if (yf + 70 > 280) { doc.addPage(); yf = 20; } doc.addImage(src,'JPEG',m,yf,80,65); yf += 72; } catch(e){}
+    });
+  }
+
   doc.save(`Arqueo_${r.agente}_${r.fecha || 'fecha'}.pdf`);
   showToast('✓ PDF generado', 'success');
 }
@@ -1789,6 +1981,14 @@ function generateEntregaPDF(r) {
   if (r.auditorNombre) doc.text(r.auditorNombre, col1, y);
   if (r.auditadoNombre) doc.text(r.auditadoNombre, col2, y);
 
+  if (r.fotos && r.fotos.length) {
+    doc.addPage(); let yf = 20;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf += 10;
+    r.fotos.forEach(src => {
+      try { if (yf + 70 > 280) { doc.addPage(); yf = 20; } doc.addImage(src,'JPEG',m,yf,80,65); yf += 72; } catch(e){}
+    });
+  }
+
   doc.save(`Entrega_${r.agente}_${r.fecha||'fecha'}.pdf`);
   showToast('✓ PDF generado', 'success');
 }
@@ -1810,6 +2010,7 @@ function openForm(type) {
     showScreen(type);
     setTimeout(() => {
       if (type === 'agenteATM') {
+        aatFotos = []; const w1=document.getElementById('aat-fotos-wrap'); if(w1) w1.innerHTML='';
         document.getElementById('aat-fecha').value = dateStr;
         ['aat-agente','aat-id','aat-obs','aat-auditor-nombre','aat-auditado-nombre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
         buildBilletesGrid('aat-rem-wrap', [...BILLETES_ATM,...BILLETES_ATM], 'aat-rem', 'calcAgenteATM()', true);
@@ -1817,6 +2018,7 @@ function openForm(type) {
         initSig('sig-auditor-aat','ph-auditor-aat');
         initSig('sig-auditado-aat','ph-auditado-aat');
       } else {
+        ateFotos = []; const w2=document.getElementById('ate-fotos-wrap'); if(w2) w2.innerHTML='';
         document.getElementById('ate-fecha').value = dateStr;
         ['ate-agente','ate-obs','ate-auditor-nombre','ate-auditado-nombre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
         buildBilletesGrid('ate-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-aptos', 'calcAgenteTesoro()');
@@ -1864,6 +2066,7 @@ function saveAgenteATM() {
     auditadoNombre: document.getElementById('aat-auditado-nombre').value.trim(),
     sigAuditor: getSigData('sig-auditor-aat'),
     sigAuditado: getSigData('sig-auditado-aat'),
+    fotos: [...aatFotos],
     createdAt: new Date().toISOString()
   };
   const records = getRecords(); records.unshift(record); saveRecords(records);
@@ -1886,6 +2089,7 @@ function saveAgenteTesoro() {
     auditadoNombre: document.getElementById('ate-auditado-nombre').value.trim(),
     sigAuditor: getSigData('sig-auditor-ate'),
     sigAuditado: getSigData('sig-auditado-ate'),
+    fotos: [...ateFotos],
     createdAt: new Date().toISOString()
   };
   const records = getRecords(); records.unshift(record); saveRecords(records);
@@ -1922,12 +2126,13 @@ function generateAgenteATMPDF(r) {
   doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.',m,y); y+=10; doc.setTextColor(0);
   const sigW=75,sigH=25,col1=m,col2=W-m-sigW;
   doc.setDrawColor(180); doc.line(col1,y+sigH,col1+sigW,y+sigH); doc.line(col2,y+sigH,col2+sigW,y+sigH);
-  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'PNG',col1,y,sigW,sigH);}catch(e){}}
-  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'PNG',col2,y,sigW,sigH);}catch(e){}}
+  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'JPEG',col1,y,sigW,sigH);}catch(e){}}
+  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'JPEG',col2,y,sigW,sigH);}catch(e){}}
   y+=sigH+3; doc.setFontSize(8);
   doc.text('Firma, DNI y aclaración del auditor',col1,y); doc.text('Firma, DNI y aclaración del auditado',col2,y); y+=5;
   if(r.auditorNombre) doc.text(r.auditorNombre,col1,y);
   if(r.auditadoNombre) doc.text(r.auditadoNombre,col2,y);
+  if(r.fotos&&r.fotos.length){doc.addPage();let yf=20;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('FOTOS',m,yf);yf+=10;r.fotos.forEach(src=>{try{if(yf+70>280){doc.addPage();yf=20;}doc.addImage(src,'JPEG',m,yf,80,65);yf+=72;}catch(e){}});}
   doc.save(`ArqueoATM_Ag${r.agente}_${r.fecha||'fecha'}.pdf`);
   showToast('✓ PDF generado','success');
 }
@@ -1961,12 +2166,13 @@ function generateAgenteTesoroPDF(r) {
   doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.',m,y); y+=10; doc.setTextColor(0);
   const sigW=75,sigH=25,col1=m,col2=W-m-sigW;
   doc.setDrawColor(180); doc.line(col1,y+sigH,col1+sigW,y+sigH); doc.line(col2,y+sigH,col2+sigW,y+sigH);
-  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'PNG',col1,y,sigW,sigH);}catch(e){}}
-  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'PNG',col2,y,sigW,sigH);}catch(e){}}
+  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'JPEG',col1,y,sigW,sigH);}catch(e){}}
+  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'JPEG',col2,y,sigW,sigH);}catch(e){}}
   y+=sigH+3; doc.setFontSize(8);
   doc.text('Firma, DNI y aclaración del auditor',col1,y); doc.text('Firma, DNI y aclaración del auditado',col2,y); y+=5;
   if(r.auditorNombre) doc.text(r.auditorNombre,col1,y);
   if(r.auditadoNombre) doc.text(r.auditadoNombre,col2,y);
+  if(r.fotos&&r.fotos.length){doc.addPage();let yf=20;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('FOTOS',m,yf);yf+=10;r.fotos.forEach(src=>{try{if(yf+70>280){doc.addPage();yf=20;}doc.addImage(src,'JPEG',m,yf,80,65);yf+=72;}catch(e){}});}
   doc.save(`TesoroATM_Ag${r.agente}_${r.fecha||'fecha'}.pdf`);
   showToast('✓ PDF generado','success');
 }
@@ -2057,7 +2263,19 @@ function openSucForm(type) {
     if (type==='tesoroatm') buildBilletesGrid('ste-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ste', 'calcTesoroATM()');
     if (type==='remesaatm') buildBilletesGrid('sra-billetes-wrap', [20000,10000,2000,1000,500,200,100], 'sra', 'calcRemesaATM()');
     if (type==='qiwi') buildBilletesGrid('sq-billetes-wrap', BILLETES_QIWI, 'sq-bill', 'calcQiwi()');
-    if (type==='gastos') { sgComprobantes=[]; sgFotos=[]; renderComprobantes(); renderFotos(); }
+    // reset fotos
+  const FOTOS_BY_TYPE = {
+    cambio:scFotos, reserva:srFotos, cajasuc:scsFotos, atm:satmFotos,
+    tesoroatm:steFotos, remesaatm:sraFotos, remesabanco:srbFotos,
+    depositos:sdFotos, seguridad:ssegFotos
+  };
+  const WRAP_BY_TYPE = {
+    cambio:'sc-fotos-wrap', reserva:'sr-fotos-wrap', cajasuc:'scs-fotos-wrap', atm:'satm-fotos-wrap',
+    tesoroatm:'ste-fotos-wrap', remesaatm:'sra-fotos-wrap', remesabanco:'srb-fotos-wrap',
+    depositos:'sd-fotos-wrap', seguridad:'sseg-fotos-wrap'
+  };
+  if (FOTOS_BY_TYPE[type]) { FOTOS_BY_TYPE[type].length = 0; const w=document.getElementById(WRAP_BY_TYPE[type]); if(w) w.innerHTML=''; }
+  if (type==='gastos') { sgComprobantes=[]; sgFotos=[]; renderComprobantes(); renderFotos(); }
     if (type==='revtc') { stcTalonarios=[]; renderTalonarios(); }
   }, 100);
 }
@@ -2215,6 +2433,12 @@ function saveSucForm(type) {
 
   const getSig = id => { try { return getSigData(id); } catch(e){ return null; } };
 
+  const FOTOS_SAVE = {
+    cambio:[...scFotos], reserva:[...srFotos], cajasuc:[...scsFotos], atm:[...satmFotos],
+    tesoroatm:[...steFotos], remesaatm:[...sraFotos], remesabanco:[...srbFotos],
+    depositos:[...sdFotos], seguridad:[...ssegFotos]
+  };
+
   const base = {
     id: Date.now().toString(), type: 'suc-'+type, sucType: type,
     label: SUC_LABELS[type], stand,
@@ -2226,6 +2450,7 @@ function saveSucForm(type) {
     auditadoNombre: document.getElementById(`${p}-auditado-nombre`)?.value.trim()||'',
     sigAuditor: getSig(`sig-auditor-suc-${type}`),
     sigAuditado: getSig(`sig-auditado-suc-${type}`),
+    fotos: FOTOS_SAVE[type] || [],
     createdAt: new Date().toISOString()
   };
 
@@ -2498,8 +2723,8 @@ function generateSucPDF(r) {
   const sigW=75, sigH=25;
   const col1=m, col2=W-m-sigW;
   doc.setDrawColor(180); doc.line(col1, y+sigH, col1+sigW, y+sigH); doc.line(col2, y+sigH, col2+sigW, y+sigH);
-  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor,'PNG',col1,y,sigW,sigH); } catch(e){} }
-  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado,'PNG',col2,y,sigW,sigH); } catch(e){} }
+  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor,'JPEG',col1,y,sigW,sigH); } catch(e){} }
+  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado,'JPEG',col2,y,sigW,sigH); } catch(e){} }
   y+=sigH+3;
   doc.setFontSize(8);
   doc.text('Firma, DNI y aclaración del auditor', col1, y);
@@ -2509,10 +2734,19 @@ function generateSucPDF(r) {
 
   // second auditado sig (reserva)
   if (r.sigAuditado2) {
-    try { doc.addImage(r.sigAuditado2,'PNG',col2,y,sigW,sigH); } catch(e){}
+    try { doc.addImage(r.sigAuditado2,'JPEG',col2,y,sigW,sigH); } catch(e){}
     doc.setDrawColor(180); doc.line(col2, y+sigH, col2+sigW, y+sigH);
     y+=sigH+3; doc.setFontSize(8); doc.text('Firma, DNI y aclaración del auditado', col2, y); y+=5;
     if (r.auditado2Nombre) doc.text(r.auditado2Nombre, col2, y);
+  }
+
+  // fotos
+  if (r.fotos && r.fotos.length) {
+    doc.addPage(); let yf=20;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf+=10;
+    r.fotos.forEach(src => {
+      try { if(yf+70>280){doc.addPage();yf=20;} doc.addImage(src,'JPEG',m,yf,80,65); yf+=72; } catch(e){}
+    });
   }
 
   doc.save(`${r.label.replace(/ /g,'_')}_${r.stand}_${r.fecha||'fecha'}.pdf`);
