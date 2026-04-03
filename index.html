@@ -1820,9 +1820,59 @@ let srbFotos = [], sdFotos = [], ssegFotos = [];
 
 // ══ STORAGE ══
 function getRecords() {
-  try { return JSON.parse(localStorage.getItem('gire_records') || '[]'); } catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem('gire_records') || '[]');
+    return raw.map(r => sanitizeRecord(r)).filter(Boolean);
+  } catch { return []; }
 }
 function saveRecords(r) { localStorage.setItem('gire_records', JSON.stringify(r)); }
+
+function sanitizeRecord(r) {
+  try {
+    if (!r || typeof r !== 'object') return null;
+    // Ensure required fields exist with safe defaults
+    r.id = r.id || Date.now().toString();
+    r.type = r.type || 'arqueo';
+    r.fecha = r.fecha || '';
+    r.hora = r.hora || '';
+    r.obs = r.obs || '';
+    r.auditorNombre = r.auditorNombre || '';
+    r.auditadoNombre = r.auditadoNombre || '';
+    r.fotos = Array.isArray(r.fotos) ? r.fotos : [];
+    // agente forms
+    r.agente = r.agente || '';
+    // suc forms
+    r.stand = r.stand || '';
+    r.cajero = r.cajero || '';
+    r.label = r.label || r.type || 'Registro';
+    r.sucType = r.sucType || '';
+    // arqueo specific
+    if (r.type === 'arqueo') {
+      r.cajero = r.cajero || '';
+      r.puesto = r.puesto || '';
+      r.recontado = r.recontado || '0';
+      r.cierre = r.cierre || '0';
+      r.diferencia = r.diferencia || '0';
+    }
+    // entrega specific
+    if (r.type === 'entrega') {
+      r.remito = r.remito || '';
+      r.total = r.total || '0';
+    }
+    // agenteATM
+    if (r.type === 'agenteATM') {
+      r.idAtm = r.idAtm || '';
+      r.remBilletes = Array.isArray(r.remBilletes) ? r.remBilletes : [];
+      r.recBilletes = Array.isArray(r.recBilletes) ? r.recBilletes : [];
+    }
+    // agenteTesoro
+    if (r.type === 'agenteTesoro') {
+      r.aptosBilletes = Array.isArray(r.aptosBilletes) ? r.aptosBilletes : [];
+      r.noAptosBilletes = Array.isArray(r.noAptosBilletes) ? r.noAptosBilletes : [];
+    }
+    return r;
+  } catch(e) { return null; }
+}
 
 // ══ NAVIGATION ══
 function showScreen(id) {
@@ -2091,6 +2141,7 @@ function renderHistoryAgentes() {
     return;
   }
   list.innerHTML = records.slice(0, 20).map(r => {
+    try {
     const typeLabel = r.type === 'arqueo' ? '🧾 Arqueo' : r.type === 'entrega' ? '🚛 Entrega' : r.type === 'agenteATM' ? '🏧 Arqueo ATM' : '🔐 Tesoro ATM';
     const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
     let badgeClass = 'badge-ok', badgeText = 'OK';
@@ -2102,14 +2153,21 @@ function renderHistoryAgentes() {
     } else if (r.type === 'entrega') {
       badgeClass = 'badge-ok'; badgeText = '$' + fmt(parseFloat(r.total) || 0);
     }
-    const name = r.type === 'arqueo' ? r.cajero : r.type === 'entrega' ? `Ag.${r.agente}` : `Ag.${r.agente}`;
-    return `<div class="history-item" onclick="openDetail('${r.id}')">
-      <div class="hi-left">
+    const name = r.type === 'arqueo' ? (r.cajero||'—') : `Ag.${r.agente||'—'}`;
+    return `<div class="history-item" style="cursor:default">
+      <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
         <h4>${typeLabel} · ${name}</h4>
-        <p>${dateStr} ${r.hora || ''} · Ag.${r.agente}</p>
+        <p>${dateStr} ${r.hora || ''} · Ag.${r.agente||'—'}</p>
       </div>
-      <span class="badge ${badgeClass}">${badgeText}</span>
+      <span class="badge ${badgeClass}" onclick="openDetail('${r.id}')" style="cursor:pointer">${badgeText}</span>
+      <button onclick="quickDelete('${r.id}','agentes')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`;
+    } catch(e) {
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
+        <button onclick="quickDelete('${r.id}','agentes')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
+      </div>`;
+    }
   }).join('');
 }
 
@@ -2122,28 +2180,38 @@ function renderHistory() {
     return;
   }
   list.innerHTML = records.slice(0, 10).map(r => {
+    try {
     const isSuc = r.type && r.type.startsWith('suc-');
-    const typeLabel = isSuc ? (SUC_ICONS[r.sucType]||'📋')+' '+r.label : r.type === 'arqueo' ? '🧾 Arqueo' : '🚛 Entrega';
+    const typeLabel = isSuc ? (SUC_ICONS[r.sucType]||'📋')+' '+(r.label||'Sucursal') : r.type === 'arqueo' ? '🧾 Arqueo' : r.type === 'entrega' ? '🚛 Entrega' : r.type === 'agenteATM' ? '🏧 ATM' : r.type === 'agenteTesoro' ? '🔐 Tesoro' : '📋 Registro';
     const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
-    const name = isSuc ? r.stand : r.type === 'arqueo' ? r.cajero : `Agente ${r.agente}`;
-    const sub = isSuc ? (r.cajero||r.stand) : `Ag.${r.agente}`;
+    const name = isSuc ? (r.stand||'—') : r.type === 'arqueo' ? (r.cajero||'—') : `Agente ${r.agente||'—'}`;
+    const sub = isSuc ? (r.cajero||r.stand||'—') : `Ag.${r.agente||'—'}`;
     let badgeClass = 'badge-ok', badgeText = 'OK';
     if (!isSuc && r.type === 'arqueo') {
       const dif = parseFloat(r.diferencia);
       if (!isNaN(dif) && dif !== 0) { badgeClass = 'badge-diff'; badgeText = (dif > 0 ? '+' : '') + '$' + fmt(Math.abs(dif)); }
     }
-    return `<div class="history-item" onclick="openDetail('${r.id}')">
-      <div class="hi-left">
+    const dest = isSuc ? 'sucursales' : 'agentes';
+    return `<div class="history-item" style="cursor:default">
+      <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
         <h4>${typeLabel} · ${name}</h4>
         <p>${dateStr} ${r.hora || ''} · ${sub}</p>
       </div>
-      <span class="badge ${badgeClass}">${badgeText}</span>
+      <span class="badge ${badgeClass}" onclick="openDetail('${r.id}')" style="cursor:pointer">${badgeText}</span>
+      <button onclick="quickDelete('${r.id}','home')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`;
+    } catch(e) {
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
+        <button onclick="quickDelete('${r.id}','home')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
+      </div>`;
+    }
   }).join('');
 }
 
 // ══ DETAIL ══
 function openDetail(id) {
+  try {
   currentDetailId = id;
   const records = getRecords();
   const r = records.find(x => x.id === id);
@@ -2264,13 +2332,34 @@ function openDetail(id) {
       ${fotosHTML}`;
   }
   showScreen('detail');
+  } catch(e) {
+    // Registro antiguo o con datos incompletos — mostrar info básica igual
+    const r2 = getRecords().find(x => x.id === id);
+    const body = document.getElementById('detail-body');
+    document.getElementById('detail-title').textContent = 'Registro';
+    body.innerHTML = `
+      <div class="detail-section-title">DATOS</div>
+      <div class="detail-field"><div class="df-label">Tipo</div><div class="df-val">${r2?.type || '—'}</div></div>
+      <div class="detail-field"><div class="df-label">Agente / Stand</div><div class="df-val">${r2?.agente || r2?.stand || '—'}</div></div>
+      <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r2?.fecha ? r2.fecha.split('-').reverse().join('/') : '—'}</div></div>
+      <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r2?.cajero || '—'}</div></div>
+      <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px;font-size:13px;color:var(--text2)">
+        Este registro fue generado con una versión anterior de la app. El PDF puede regenerarse desde el historial.
+      </div>`;
+    showScreen('detail');
+  }
 }
 
 function sigPreview(label, name, dataUrl) {
-  return `<div class="detail-field">
-    <div class="df-label">${label}${name ? ' — ' + name : ''}</div>
-    ${dataUrl ? `<div class="sig-preview"><img src="${dataUrl}"></div>` : '<div style="color:var(--text2);font-size:13px">Sin firma</div>'}
-  </div>`;
+  try {
+    const safe = dataUrl && typeof dataUrl === 'string' && dataUrl.startsWith('data:') ? dataUrl : null;
+    return `<div class="detail-field">
+      <div class="df-label">${label}${name ? ' — ' + name : ''}</div>
+      ${safe ? `<div class="sig-preview"><img src="${safe}"></div>` : '<div style="color:var(--text2);font-size:13px">Sin firma</div>'}
+    </div>`;
+  } catch(e) {
+    return `<div class="detail-field"><div class="df-label">${label}</div><div style="color:var(--text2);font-size:13px">Sin firma</div></div>`;
+  }
 }
 
 function deleteRecord() {
@@ -3008,19 +3097,38 @@ function saveSucForm(type) {
 }
 
 // ── HISTORY SUCURSALES ──
+// ══ QUICK DELETE ══
+function quickDelete(id, from) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  const records = getRecords().filter(r => r.id !== id);
+  saveRecords(records);
+  showToast('Registro eliminado', 'info');
+  if (from === 'home') renderHistory();
+  else if (from === 'agentes') renderHistoryAgentes();
+  else if (from === 'sucursales') renderHistorySuc();
+}
+
 function renderHistorySuc() {
   const list = document.getElementById('history-list-sucursales');
   const records = getRecords().filter(r => r.type && r.type.startsWith('suc-'));
   if (!records.length) { list.innerHTML='<div class="empty-state"><div class="es-icon">📂</div><p>No hay registros aún.</p></div>'; return; }
   list.innerHTML = records.slice(0,20).map(r=>{
+    try {
     const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
-    return `<div class="history-item" onclick="openDetail('${r.id}')">
-      <div class="hi-left">
-        <h4>${SUC_ICONS[r.sucType]||'📋'} ${r.label} · ${r.stand}</h4>
+    return `<div class="history-item" style="cursor:default">
+      <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
+        <h4>${SUC_ICONS[r.sucType]||'📋'} ${r.label||'Sucursal'} · ${r.stand||'—'}</h4>
         <p>${dateStr} ${r.hora||''} · ${r.cajero||''}</p>
       </div>
-      <span class="badge badge-ok">OK</span>
+      <span class="badge badge-ok" onclick="openDetail('${r.id}')" style="cursor:pointer">OK</span>
+      <button onclick="quickDelete('${r.id}','sucursales')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`;
+    } catch(e) {
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
+        <button onclick="quickDelete('${r.id}','sucursales')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
+      </div>`;
+    }
   }).join('');
 }
 
@@ -3225,30 +3333,6 @@ function generateSucPDF(r) {
   showToast('✓ PDF generado', 'success');
 }
 
-// also show suc records in detail
-const _origOpenDetail = openDetail;
-function openDetail(id) {
-  const r = getRecords().find(x=>x.id===id);
-  if (r && r.type && r.type.startsWith('suc-')) {
-    currentDetailId = id;
-    document.getElementById('detail-title').textContent = r.label;
-    const body = document.getElementById('detail-body');
-    body.innerHTML = `
-      <div class="detail-section-title">DATOS</div>
-      <div class="detail-field"><div class="df-label">Centro / Stand</div><div class="df-val">${r.stand}</div></div>
-      <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r.cajero}</div></div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha?r.fecha.split('-').reverse().join('/'):'—'}</div></div>
-        <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora}</div></div>
-      </div>
-      ${r.obs?`<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>`:''}
-      <div class="detail-section-title">FIRMAS</div>
-      ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
-      ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
-    `;
-    showScreen('detail');
-  } else { _origOpenDetail(id); }
-}
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
