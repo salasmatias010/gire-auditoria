@@ -1915,11 +1915,31 @@ function setDefaults(type) {
   }
 }
 
+// ══ COMPRESS IMAGE (max 800px, JPEG 60%) ══
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.6));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function handleFotosArqueo(event) {
   Array.from(event.target.files).forEach(f => {
-    const reader = new FileReader();
-    reader.onload = e => { aFotos.push(e.target.result); renderFotosArqueo(); };
-    reader.readAsDataURL(f);
+    compressImage(f, c => { aFotos.push(c); renderFotosArqueo(); });
   });
 }
 function renderFotosArqueo() {
@@ -1934,9 +1954,7 @@ function renderFotosArqueo() {
 
 function handleFotosEntrega(event) {
   Array.from(event.target.files).forEach(f => {
-    const reader = new FileReader();
-    reader.onload = e => { eFotos.push(e.target.result); renderFotosEntrega(); };
-    reader.readAsDataURL(f);
+    compressImage(f, c => { eFotos.push(c); renderFotosEntrega(); });
   });
 }
 function renderFotosEntrega() {
@@ -1969,17 +1987,17 @@ function renderFotosGeneric(arr, wrapId) {
     </div>`).join('');
 }
 
-function handleFotosSC(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{scFotos.push(ev.target.result);renderFG(scFotos,'sc-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSR(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{srFotos.push(ev.target.result);renderFG(srFotos,'sr-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSCS(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{scsFotos.push(ev.target.result);renderFG(scsFotos,'scs-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSATM(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{satmFotos.push(ev.target.result);renderFG(satmFotos,'satm-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosAAT(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{aatFotos.push(ev.target.result);renderFG(aatFotos,'aat-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosATE(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{ateFotos.push(ev.target.result);renderFG(ateFotos,'ate-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSTE(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{steFotos.push(ev.target.result);renderFG(steFotos,'ste-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSRA(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{sraFotos.push(ev.target.result);renderFG(sraFotos,'sra-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSRB(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{srbFotos.push(ev.target.result);renderFG(srbFotos,'srb-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSD(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{sdFotos.push(ev.target.result);renderFG(sdFotos,'sd-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSSEG(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{ssegFotos.push(ev.target.result);renderFG(ssegFotos,'sseg-fotos-wrap');};r.readAsDataURL(f);});}
+function handleFotosSC(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{scFotos.push(c);renderFG(scFotos,'sc-fotos-wrap');});});}
+function handleFotosSR(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{srFotos.push(c);renderFG(srFotos,'sr-fotos-wrap');});});}
+function handleFotosSCS(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{scsFotos.push(c);renderFG(scsFotos,'scs-fotos-wrap');});});}
+function handleFotosSATM(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{satmFotos.push(c);renderFG(satmFotos,'satm-fotos-wrap');});});}
+function handleFotosAAT(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{aatFotos.push(c);renderFG(aatFotos,'aat-fotos-wrap');});});}
+function handleFotosATE(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{ateFotos.push(c);renderFG(ateFotos,'ate-fotos-wrap');});});}
+function handleFotosSTE(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{steFotos.push(c);renderFG(steFotos,'ste-fotos-wrap');});});}
+function handleFotosSRA(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{sraFotos.push(c);renderFG(sraFotos,'sra-fotos-wrap');});});}
+function handleFotosSRB(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{srbFotos.push(c);renderFG(srbFotos,'srb-fotos-wrap');});});}
+function handleFotosSD(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{sdFotos.push(c);renderFG(sdFotos,'sd-fotos-wrap');});});}
+function handleFotosSSEG(e){Array.from(e.target.files).forEach(f=>{compressImage(f,c=>{ssegFotos.push(c);renderFG(ssegFotos,'sseg-fotos-wrap');});});}
 
 const FOTO_MAP = {
   'sc-fotos-wrap':scFotos,'sr-fotos-wrap':srFotos,'scs-fotos-wrap':scsFotos,
