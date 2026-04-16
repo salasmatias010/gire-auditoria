@@ -1818,19 +1818,62 @@ let scFotos = [], srFotos = [], scsFotos = [], satmFotos = [];
 let aatFotos = [], ateFotos = [], steFotos = [], sraFotos = [];
 let srbFotos = [], sdFotos = [], ssegFotos = [];
 
-// ══ STORAGE ══
+// ══ STORAGE — fotos y sigs NO se persisten para no romper localStorage ══
 function getRecords() {
   try {
     const raw = JSON.parse(localStorage.getItem('gire_records') || '[]');
     return raw.map(r => sanitizeRecord(r)).filter(Boolean);
   } catch { return []; }
 }
-function saveRecords(r) { localStorage.setItem('gire_records', JSON.stringify(r)); }
+
+function saveRecords(records) {
+  try {
+    // Guardamos solo metadatos — fotos y firmas grandes se descartan
+    const slim = records.map(rec => {
+      const copy = Object.assign({}, rec);
+      copy.fotos = [];
+      // Firmas se guardan en versión pequeña (ya comprimidas por getSigDataSmall)
+      // Si son null o string corto está bien, si son enormes las borramos
+      if (copy.sigAuditor && copy.sigAuditor.length > 50000) copy.sigAuditor = null;
+      if (copy.sigAuditado && copy.sigAuditado.length > 50000) copy.sigAuditado = null;
+      if (copy.sigAuditado2 && copy.sigAuditado2.length > 50000) copy.sigAuditado2 = null;
+      return copy;
+    });
+    localStorage.setItem('gire_records', JSON.stringify(slim));
+  } catch(e) {
+    // Si sigue fallando, guardamos solo metadatos mínimos
+    try {
+      const minimal = records.map(rec => ({
+        id: rec.id,
+        type: rec.type,
+        sucType: rec.sucType || '',
+        label: rec.label || rec.type,
+        agente: rec.agente || '',
+        stand: rec.stand || '',
+        cajero: rec.cajero || '',
+        fecha: rec.fecha || '',
+        hora: rec.hora || '',
+        obs: rec.obs || '',
+        auditorNombre: rec.auditorNombre || '',
+        auditadoNombre: rec.auditadoNombre || '',
+        diferencia: rec.diferencia || '0',
+        total: rec.total || '0',
+        recontado: rec.recontado || '0',
+        createdAt: rec.createdAt || new Date().toISOString(),
+        fotos: [],
+        sigAuditor: null,
+        sigAuditado: null
+      }));
+      localStorage.setItem('gire_records', JSON.stringify(minimal));
+    } catch(e2) {
+      console.warn('No se pudo guardar en localStorage:', e2);
+    }
+  }
+}
 
 function sanitizeRecord(r) {
   try {
     if (!r || typeof r !== 'object') return null;
-    // Ensure required fields exist with safe defaults
     r.id = r.id || Date.now().toString();
     r.type = r.type || 'arqueo';
     r.fecha = r.fecha || '';
@@ -1839,33 +1882,26 @@ function sanitizeRecord(r) {
     r.auditorNombre = r.auditorNombre || '';
     r.auditadoNombre = r.auditadoNombre || '';
     r.fotos = Array.isArray(r.fotos) ? r.fotos : [];
-    // agente forms
     r.agente = r.agente || '';
-    // suc forms
     r.stand = r.stand || '';
     r.cajero = r.cajero || '';
     r.label = r.label || r.type || 'Registro';
     r.sucType = r.sucType || '';
-    // arqueo specific
     if (r.type === 'arqueo') {
-      r.cajero = r.cajero || '';
       r.puesto = r.puesto || '';
       r.recontado = r.recontado || '0';
       r.cierre = r.cierre || '0';
       r.diferencia = r.diferencia || '0';
     }
-    // entrega specific
     if (r.type === 'entrega') {
       r.remito = r.remito || '';
       r.total = r.total || '0';
     }
-    // agenteATM
     if (r.type === 'agenteATM') {
       r.idAtm = r.idAtm || '';
       r.remBilletes = Array.isArray(r.remBilletes) ? r.remBilletes : [];
       r.recBilletes = Array.isArray(r.recBilletes) ? r.recBilletes : [];
     }
-    // agenteTesoro
     if (r.type === 'agenteTesoro') {
       r.aptosBilletes = Array.isArray(r.aptosBilletes) ? r.aptosBilletes : [];
       r.noAptosBilletes = Array.isArray(r.noAptosBilletes) ? r.noAptosBilletes : [];
@@ -1877,11 +1913,48 @@ function sanitizeRecord(r) {
 // ══ NAVIGATION ══
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
+  const el = document.getElementById('screen-' + id);
+  if (el) el.classList.add('active');
   window.scrollTo(0, 0);
 }
 function goHome() { showScreen('home'); renderHistory(); }
+
 function openForm(type) {
+  if (type === 'agenteATM' || type === 'agenteTesoro') {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    showScreen(type);
+    setTimeout(() => {
+      if (type === 'agenteATM') {
+        aatFotos = [];
+        const w1 = document.getElementById('aat-fotos-wrap');
+        if (w1) w1.innerHTML = '';
+        const fe = document.getElementById('aat-fecha');
+        if (fe) fe.value = dateStr;
+        ['aat-agente','aat-id','aat-obs','aat-auditor-nombre','aat-auditado-nombre'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        buildBilletesGrid('aat-rem-wrap', [...BILLETES_ATM, ...BILLETES_ATM], 'aat-rem', 'calcAgenteATM()', true);
+        buildBilletesGrid('aat-rec-wrap', BILLETES_ATM, 'aat-rec', 'calcAgenteATM()');
+        initSig('sig-auditor-aat', 'ph-auditor-aat');
+        initSig('sig-auditado-aat', 'ph-auditado-aat');
+      } else {
+        ateFotos = [];
+        const w2 = document.getElementById('ate-fotos-wrap');
+        if (w2) w2.innerHTML = '';
+        const fe = document.getElementById('ate-fecha');
+        if (fe) fe.value = dateStr;
+        ['ate-agente','ate-obs','ate-auditor-nombre','ate-auditado-nombre'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        buildBilletesGrid('ate-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-aptos', 'calcAgenteTesoro()');
+        buildBilletesGrid('ate-noaptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-noaptos', 'calcAgenteTesoro()');
+        initSig('sig-auditor-ate', 'ph-auditor-ate');
+        initSig('sig-auditado-ate', 'ph-auditado-ate');
+      }
+    }, 100);
+    return;
+  }
   setDefaults(type);
   showScreen(type);
   setTimeout(() => {
@@ -1893,112 +1966,95 @@ function openForm(type) {
 function setDefaults(type) {
   const now = new Date();
   const dateStr = now.toISOString().split('T')[0];
-
   if (type === 'arqueo') {
     aFotos = [];
-    const fw = document.getElementById('a-fotos-wrap'); if(fw) fw.innerHTML = '';
-    document.getElementById('a-fecha').value = dateStr;
-    document.getElementById('a-dif-display').textContent = '—';
-    document.getElementById('a-dif-display').className = 'tval';
+    const fw = document.getElementById('a-fotos-wrap'); if (fw) fw.innerHTML = '';
+    const fe = document.getElementById('a-fecha'); if (fe) fe.value = dateStr;
+    const dd = document.getElementById('a-dif-display');
+    if (dd) { dd.textContent = '—'; dd.className = 'tval'; }
     ['a-agente','a-cajero','a-puesto','a-recontado','a-cierre','a-obs','a-auditor-nombre','a-auditado-nombre'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
+      const el = document.getElementById(id); if (el) el.value = '';
     });
   } else {
     eFotos = [];
-    const fw = document.getElementById('e-fotos-wrap'); if(fw) fw.innerHTML = '';
-    document.getElementById('e-fecha').value = dateStr;
+    const fw = document.getElementById('e-fotos-wrap'); if (fw) fw.innerHTML = '';
+    const fe = document.getElementById('e-fecha'); if (fe) fe.value = dateStr;
     ['e-agente','e-remito','e-total','e-obs','e-auditor-nombre','e-auditado-nombre'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
+      const el = document.getElementById(id); if (el) el.value = '';
     });
   }
 }
 
+// ══ FOTO HANDLERS ══
 function handleFotosArqueo(event) {
   Array.from(event.target.files).forEach(f => {
-    const reader = new FileReader();
-    reader.onload = e => { aFotos.push(e.target.result); renderFotosArqueo(); };
-    reader.readAsDataURL(f);
+    compressAndStore(f, aFotos, () => renderFotosWrap(aFotos, 'a-fotos-wrap', 'aFotos'));
   });
 }
-function renderFotosArqueo() {
-  const wrap = document.getElementById('a-fotos-wrap');
-  if (!wrap) return;
-  wrap.innerHTML = aFotos.map((src,i) => `
-    <div style="position:relative;width:80px;height:80px">
-      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
-      <button onclick="aFotos.splice(${i},1);renderFotosArqueo()" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">✕</button>
-    </div>`).join('');
-}
-
 function handleFotosEntrega(event) {
   Array.from(event.target.files).forEach(f => {
-    const reader = new FileReader();
-    reader.onload = e => { eFotos.push(e.target.result); renderFotosEntrega(); };
-    reader.readAsDataURL(f);
+    compressAndStore(f, eFotos, () => renderFotosWrap(eFotos, 'e-fotos-wrap', 'eFotos'));
   });
 }
-function renderFotosEntrega() {
-  const wrap = document.getElementById('e-fotos-wrap');
-  if (!wrap) return;
-  wrap.innerHTML = eFotos.map((src,i) => `
-    <div style="position:relative;width:80px;height:80px">
-      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
-      <button onclick="eFotos.splice(${i},1);renderFotosEntrega()" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">✕</button>
-    </div>`).join('');
-}
+function handleFotosSC(e)   { Array.from(e.target.files).forEach(f => compressAndStore(f, scFotos,   () => renderFG(scFotos,   'sc-fotos-wrap'))); }
+function handleFotosSR(e)   { Array.from(e.target.files).forEach(f => compressAndStore(f, srFotos,   () => renderFG(srFotos,   'sr-fotos-wrap'))); }
+function handleFotosSCS(e)  { Array.from(e.target.files).forEach(f => compressAndStore(f, scsFotos,  () => renderFG(scsFotos,  'scs-fotos-wrap'))); }
+function handleFotosSATM(e) { Array.from(e.target.files).forEach(f => compressAndStore(f, satmFotos, () => renderFG(satmFotos, 'satm-fotos-wrap'))); }
+function handleFotosAAT(e)  { Array.from(e.target.files).forEach(f => compressAndStore(f, aatFotos,  () => renderFG(aatFotos,  'aat-fotos-wrap'))); }
+function handleFotosATE(e)  { Array.from(e.target.files).forEach(f => compressAndStore(f, ateFotos,  () => renderFG(ateFotos,  'ate-fotos-wrap'))); }
+function handleFotosSTE(e)  { Array.from(e.target.files).forEach(f => compressAndStore(f, steFotos,  () => renderFG(steFotos,  'ste-fotos-wrap'))); }
+function handleFotosSRA(e)  { Array.from(e.target.files).forEach(f => compressAndStore(f, sraFotos,  () => renderFG(sraFotos,  'sra-fotos-wrap'))); }
+function handleFotosSRB(e)  { Array.from(e.target.files).forEach(f => compressAndStore(f, srbFotos,  () => renderFG(srbFotos,  'srb-fotos-wrap'))); }
+function handleFotosSD(e)   { Array.from(e.target.files).forEach(f => compressAndStore(f, sdFotos,   () => renderFG(sdFotos,   'sd-fotos-wrap'))); }
+function handleFotosSSEG(e) { Array.from(e.target.files).forEach(f => compressAndStore(f, ssegFotos, () => renderFG(ssegFotos, 'sseg-fotos-wrap'))); }
+function handleFotos(e) { Array.from(e.target.files).forEach(f => compressAndStore(f, sgFotos, renderFotos)); }
 
-// ── Generic foto handler factory ──
-function makeHandlers(arr, wrapId, renderFn) {
-  return function(event) {
-    Array.from(event.target.files).forEach(f => {
-      const reader = new FileReader();
-      reader.onload = e => { arr.push(e.target.result); renderFn(); };
-      reader.readAsDataURL(f);
-    });
+// Comprime la foto antes de guardarla en memoria (max 800px ancho, 70% calidad)
+function compressAndStore(file, arr, callback) {
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      arr.push(canvas.toDataURL('image/jpeg', 0.7));
+      if (callback) callback();
+    };
+    img.src = ev.target.result;
   };
+  reader.readAsDataURL(file);
 }
-function renderFotosGeneric(arr, wrapId) {
-  const wrap = document.getElementById(wrapId);
-  if (!wrap) return;
-  wrap.innerHTML = arr.map((src,i) => `
-    <div style="position:relative;width:80px;height:80px">
-      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
-      <button onclick="${arr === scFotos?'scFotos':arr===srFotos?'srFotos':arr===scsFotos?'scsFotos':arr===satmFotos?'satmFotos':arr===aatFotos?'aatFotos':arr===ateFotos?'ateFotos':arr===steFotos?'steFotos':arr===sraFotos?'sraFotos':arr===srbFotos?'srbFotos':arr===sdFotos?'sdFotos':'ssegFotos'}.splice(${i},1);renderFotosGeneric(${arr === scFotos?'scFotos':arr===srFotos?'srFotos':arr===scsFotos?'scsFotos':arr===satmFotos?'satmFotos':arr===aatFotos?'aatFotos':arr===ateFotos?'ateFotos':arr===steFotos?'steFotos':arr===sraFotos?'sraFotos':arr===srbFotos?'srbFotos':arr===sdFotos?'sdFotos':'ssegFotos'},'${wrapId}')" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">✕</button>
-    </div>`).join('');
-}
-
-function handleFotosSC(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{scFotos.push(ev.target.result);renderFG(scFotos,'sc-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSR(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{srFotos.push(ev.target.result);renderFG(srFotos,'sr-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSCS(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{scsFotos.push(ev.target.result);renderFG(scsFotos,'scs-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSATM(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{satmFotos.push(ev.target.result);renderFG(satmFotos,'satm-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosAAT(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{aatFotos.push(ev.target.result);renderFG(aatFotos,'aat-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosATE(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{ateFotos.push(ev.target.result);renderFG(ateFotos,'ate-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSTE(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{steFotos.push(ev.target.result);renderFG(steFotos,'ste-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSRA(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{sraFotos.push(ev.target.result);renderFG(sraFotos,'sra-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSRB(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{srbFotos.push(ev.target.result);renderFG(srbFotos,'srb-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSD(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{sdFotos.push(ev.target.result);renderFG(sdFotos,'sd-fotos-wrap');};r.readAsDataURL(f);});}
-function handleFotosSSEG(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{ssegFotos.push(ev.target.result);renderFG(ssegFotos,'sseg-fotos-wrap');};r.readAsDataURL(f);});}
 
 const FOTO_MAP = {
-  'sc-fotos-wrap':scFotos,'sr-fotos-wrap':srFotos,'scs-fotos-wrap':scsFotos,
-  'satm-fotos-wrap':satmFotos,'aat-fotos-wrap':aatFotos,'ate-fotos-wrap':ateFotos,
-  'ste-fotos-wrap':steFotos,'sra-fotos-wrap':sraFotos,'srb-fotos-wrap':srbFotos,
-  'sd-fotos-wrap':sdFotos,'sseg-fotos-wrap':ssegFotos
+  'sc-fotos-wrap': scFotos, 'sr-fotos-wrap': srFotos, 'scs-fotos-wrap': scsFotos,
+  'satm-fotos-wrap': satmFotos, 'aat-fotos-wrap': aatFotos, 'ate-fotos-wrap': ateFotos,
+  'ste-fotos-wrap': steFotos, 'sra-fotos-wrap': sraFotos, 'srb-fotos-wrap': srbFotos,
+  'sd-fotos-wrap': sdFotos, 'sseg-fotos-wrap': ssegFotos
 };
+
 function renderFG(arr, wrapId) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
-  wrap.innerHTML = arr.map((src,i) => `
+  wrap.innerHTML = arr.map((src, i) => `
     <div style="position:relative;width:80px;height:80px">
       <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
-      <button onclick="removeFoto('${wrapId}',${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      <button onclick="removeFoto('${wrapId}',${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
     </div>`).join('');
 }
+
+function renderFotosWrap(arr, wrapId, arrName) {
+  renderFG(arr, wrapId);
+}
+
 function removeFoto(wrapId, i) {
-  const arr = FOTO_MAP[wrapId]; if(!arr) return;
-  arr.splice(i,1); renderFG(arr, wrapId);
+  const arr = FOTO_MAP[wrapId]; if (!arr) return;
+  arr.splice(i, 1); renderFG(arr, wrapId);
 }
 
 // ══ CALC DIFERENCIA ══
@@ -2018,9 +2074,10 @@ function fmt(n) { return n.toLocaleString('es-AR', { minimumFractionDigits: 2 })
 function initSig(canvasId, phId) {
   const canvas = document.getElementById(canvasId);
   const ph = document.getElementById(phId);
+  if (!canvas || !ph) return;
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.width = (rect.width || 300) * window.devicePixelRatio;
   canvas.height = 140 * window.devicePixelRatio;
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   ctx.strokeStyle = '#e8e8f0';
@@ -2050,25 +2107,30 @@ function initSig(canvasId, phId) {
 
 function clearSig(canvasId, phId) {
   const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   canvas._hasSig = () => false;
-  document.getElementById(phId).style.display = '';
+  const ph = document.getElementById(phId);
+  if (ph) ph.style.display = '';
 }
 
-function getSigData(canvasId) {
+// Firma comprimida para PDF (tamaño reducido para no explotar localStorage)
+function getSigDataSmall(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas || !canvas._hasSig || !canvas._hasSig()) return null;
-  // Create a new canvas with white background to fix transparency in PDF
-  const offscreen = document.createElement('canvas');
-  offscreen.width = canvas.width;
-  offscreen.height = canvas.height;
-  const ctx = offscreen.getContext('2d');
+  const small = document.createElement('canvas');
+  small.width = 320;
+  small.height = 100;
+  const ctx = small.getContext('2d');
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, offscreen.width, offscreen.height);
-  ctx.drawImage(canvas, 0, 0);
-  return offscreen.toDataURL('image/jpeg', 0.95);
+  ctx.fillRect(0, 0, 320, 100);
+  ctx.drawImage(canvas, 0, 0, 320, 100);
+  return small.toDataURL('image/jpeg', 0.65);
 }
+
+// Mantener getSigData como alias para compatibilidad
+function getSigData(canvasId) { return getSigDataSmall(canvasId); }
 
 // ══ SAVE ARQUEO ══
 function saveArqueo() {
@@ -2089,8 +2151,8 @@ function saveArqueo() {
     obs: document.getElementById('a-obs').value.trim(),
     auditorNombre: document.getElementById('a-auditor-nombre').value.trim(),
     auditadoNombre: document.getElementById('a-auditado-nombre').value.trim(),
-    sigAuditor: getSigData('sig-auditor-arqueo'),
-    sigAuditado: getSigData('sig-auditado-arqueo'),
+    sigAuditor: getSigDataSmall('sig-auditor-arqueo'),
+    sigAuditado: getSigDataSmall('sig-auditado-arqueo'),
     fotos: [...aFotos],
     createdAt: new Date().toISOString()
   };
@@ -2099,7 +2161,11 @@ function saveArqueo() {
   records.unshift(record);
   saveRecords(records);
   showToast('✓ Guardado correctamente', 'success');
-  setTimeout(() => { showScreen('agentes'); renderHistoryAgentes(); generateArqueoPDF(record); }, 600);
+  setTimeout(() => {
+    showScreen('agentes');
+    renderHistoryAgentes();
+    generateArqueoPDF(record);
+  }, 600);
 }
 
 // ══ SAVE ENTREGA ══
@@ -2119,8 +2185,8 @@ function saveEntrega() {
     obs: document.getElementById('e-obs').value.trim(),
     auditorNombre: document.getElementById('e-auditor-nombre').value.trim(),
     auditadoNombre: document.getElementById('e-auditado-nombre').value.trim(),
-    sigAuditor: getSigData('sig-auditor-entrega'),
-    sigAuditado: getSigData('sig-auditado-entrega'),
+    sigAuditor: getSigDataSmall('sig-auditor-entrega'),
+    sigAuditado: getSigDataSmall('sig-auditado-entrega'),
     fotos: [...eFotos],
     createdAt: new Date().toISOString()
   };
@@ -2129,46 +2195,11 @@ function saveEntrega() {
   records.unshift(record);
   saveRecords(records);
   showToast('✓ Guardado correctamente', 'success');
-  setTimeout(() => { showScreen('agentes'); renderHistoryAgentes(); generateEntregaPDF(record); }, 600);
-}
-
-// ══ HISTORY AGENTES ══
-function renderHistoryAgentes() {
-  const list = document.getElementById('history-list-agentes');
-  const records = getRecords().filter(r => r.type === 'arqueo' || r.type === 'entrega' || r.type === 'agenteATM' || r.type === 'agenteTesoro');
-  if (!records.length) {
-    list.innerHTML = '<div class="empty-state"><div class="es-icon">📂</div><p>No hay registros aún.</p></div>';
-    return;
-  }
-  list.innerHTML = records.slice(0, 20).map(r => {
-    try {
-    const typeLabel = r.type === 'arqueo' ? '🧾 Arqueo' : r.type === 'entrega' ? '🚛 Entrega' : r.type === 'agenteATM' ? '🏧 Arqueo ATM' : '🔐 Tesoro ATM';
-    const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
-    let badgeClass = 'badge-ok', badgeText = 'OK';
-    if (r.type === 'arqueo') {
-      const dif = parseFloat(r.diferencia);
-      if (isNaN(dif)) { badgeClass = 'badge-pending'; badgeText = 'sin dif.'; }
-      else if (dif === 0) { badgeClass = 'badge-ok'; badgeText = 'OK'; }
-      else { badgeClass = 'badge-diff'; badgeText = (dif > 0 ? '+' : '') + '$' + fmt(Math.abs(dif)); }
-    } else if (r.type === 'entrega') {
-      badgeClass = 'badge-ok'; badgeText = '$' + fmt(parseFloat(r.total) || 0);
-    }
-    const name = r.type === 'arqueo' ? (r.cajero||'—') : `Ag.${r.agente||'—'}`;
-    return `<div class="history-item" style="cursor:default">
-      <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
-        <h4>${typeLabel} · ${name}</h4>
-        <p>${dateStr} ${r.hora || ''} · Ag.${r.agente||'—'}</p>
-      </div>
-      <span class="badge ${badgeClass}" onclick="openDetail('${r.id}')" style="cursor:pointer">${badgeText}</span>
-      <button onclick="quickDelete('${r.id}','agentes')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
-    </div>`;
-    } catch(e) {
-      return `<div class="history-item" style="cursor:default">
-        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
-        <button onclick="quickDelete('${r.id}','agentes')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
-      </div>`;
-    }
-  }).join('');
+  setTimeout(() => {
+    showScreen('agentes');
+    renderHistoryAgentes();
+    generateEntregaPDF(record);
+  }, 600);
 }
 
 // ══ HISTORY ══
@@ -2181,25 +2212,30 @@ function renderHistory() {
   }
   list.innerHTML = records.slice(0, 10).map(r => {
     try {
-    const isSuc = r.type && r.type.startsWith('suc-');
-    const typeLabel = isSuc ? (SUC_ICONS[r.sucType]||'📋')+' '+(r.label||'Sucursal') : r.type === 'arqueo' ? '🧾 Arqueo' : r.type === 'entrega' ? '🚛 Entrega' : r.type === 'agenteATM' ? '🏧 ATM' : r.type === 'agenteTesoro' ? '🔐 Tesoro' : '📋 Registro';
-    const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
-    const name = isSuc ? (r.stand||'—') : r.type === 'arqueo' ? (r.cajero||'—') : `Agente ${r.agente||'—'}`;
-    const sub = isSuc ? (r.cajero||r.stand||'—') : `Ag.${r.agente||'—'}`;
-    let badgeClass = 'badge-ok', badgeText = 'OK';
-    if (!isSuc && r.type === 'arqueo') {
-      const dif = parseFloat(r.diferencia);
-      if (!isNaN(dif) && dif !== 0) { badgeClass = 'badge-diff'; badgeText = (dif > 0 ? '+' : '') + '$' + fmt(Math.abs(dif)); }
-    }
-    const dest = isSuc ? 'sucursales' : 'agentes';
-    return `<div class="history-item" style="cursor:default">
-      <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
-        <h4>${typeLabel} · ${name}</h4>
-        <p>${dateStr} ${r.hora || ''} · ${sub}</p>
-      </div>
-      <span class="badge ${badgeClass}" onclick="openDetail('${r.id}')" style="cursor:pointer">${badgeText}</span>
-      <button onclick="quickDelete('${r.id}','home')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
-    </div>`;
+      const isSuc = r.type && r.type.startsWith('suc-');
+      const typeLabel = isSuc
+        ? (SUC_ICONS[r.sucType] || '📋') + ' ' + (r.label || 'Sucursal')
+        : r.type === 'arqueo' ? '🧾 Arqueo'
+        : r.type === 'entrega' ? '🚛 Entrega'
+        : r.type === 'agenteATM' ? '🏧 ATM'
+        : r.type === 'agenteTesoro' ? '🔐 Tesoro'
+        : '📋 Registro';
+      const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
+      const name = isSuc ? (r.stand || '—') : r.type === 'arqueo' ? (r.cajero || '—') : `Agente ${r.agente || '—'}`;
+      const sub = isSuc ? (r.cajero || r.stand || '—') : `Ag.${r.agente || '—'}`;
+      let badgeClass = 'badge-ok', badgeText = 'OK';
+      if (!isSuc && r.type === 'arqueo') {
+        const dif = parseFloat(r.diferencia);
+        if (!isNaN(dif) && dif !== 0) { badgeClass = 'badge-diff'; badgeText = (dif > 0 ? '+' : '') + '$' + fmt(Math.abs(dif)); }
+      }
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
+          <h4>${typeLabel} · ${name}</h4>
+          <p>${dateStr} ${r.hora || ''} · ${sub}</p>
+        </div>
+        <span class="badge ${badgeClass}" onclick="openDetail('${r.id}')" style="cursor:pointer">${badgeText}</span>
+        <button onclick="quickDelete('${r.id}','home')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
+      </div>`;
     } catch(e) {
       return `<div class="history-item" style="cursor:default">
         <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
@@ -2209,131 +2245,210 @@ function renderHistory() {
   }).join('');
 }
 
+function renderHistoryAgentes() {
+  const list = document.getElementById('history-list-agentes');
+  const records = getRecords().filter(r => ['arqueo','entrega','agenteATM','agenteTesoro'].includes(r.type));
+  if (!records.length) {
+    list.innerHTML = '<div class="empty-state"><div class="es-icon">📂</div><p>No hay registros aún.</p></div>';
+    return;
+  }
+  list.innerHTML = records.slice(0, 20).map(r => {
+    try {
+      const typeLabel = r.type === 'arqueo' ? '🧾 Arqueo'
+        : r.type === 'entrega' ? '🚛 Entrega'
+        : r.type === 'agenteATM' ? '🏧 Arqueo ATM'
+        : '🔐 Tesoro ATM';
+      const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
+      let badgeClass = 'badge-ok', badgeText = 'OK';
+      if (r.type === 'arqueo') {
+        const dif = parseFloat(r.diferencia);
+        if (isNaN(dif)) { badgeClass = 'badge-pending'; badgeText = 'sin dif.'; }
+        else if (dif === 0) { badgeClass = 'badge-ok'; badgeText = 'OK'; }
+        else { badgeClass = 'badge-diff'; badgeText = (dif > 0 ? '+' : '') + '$' + fmt(Math.abs(dif)); }
+      } else if (r.type === 'entrega') {
+        badgeClass = 'badge-ok'; badgeText = '$' + fmt(parseFloat(r.total) || 0);
+      }
+      const name = r.type === 'arqueo' ? (r.cajero || '—') : `Ag.${r.agente || '—'}`;
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
+          <h4>${typeLabel} · ${name}</h4>
+          <p>${dateStr} ${r.hora || ''} · Ag.${r.agente || '—'}</p>
+        </div>
+        <span class="badge ${badgeClass}" onclick="openDetail('${r.id}')" style="cursor:pointer">${badgeText}</span>
+        <button onclick="quickDelete('${r.id}','agentes')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
+      </div>`;
+    } catch(e) {
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
+        <button onclick="quickDelete('${r.id}','agentes')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+function renderHistorySuc() {
+  const list = document.getElementById('history-list-sucursales');
+  const records = getRecords().filter(r => r.type && r.type.startsWith('suc-'));
+  if (!records.length) {
+    list.innerHTML = '<div class="empty-state"><div class="es-icon">📂</div><p>No hay registros aún.</p></div>';
+    return;
+  }
+  list.innerHTML = records.slice(0, 20).map(r => {
+    try {
+      const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
+          <h4>${SUC_ICONS[r.sucType] || '📋'} ${r.label || 'Sucursal'} · ${r.stand || '—'}</h4>
+          <p>${dateStr} ${r.hora || ''} · ${r.cajero || ''}</p>
+        </div>
+        <span class="badge badge-ok" onclick="openDetail('${r.id}')" style="cursor:pointer">OK</span>
+        <button onclick="quickDelete('${r.id}','sucursales')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
+      </div>`;
+    } catch(e) {
+      return `<div class="history-item" style="cursor:default">
+        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
+        <button onclick="quickDelete('${r.id}','sucursales')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+// ══ QUICK DELETE ══
+function quickDelete(id, from) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  const records = getRecords().filter(r => r.id !== id);
+  saveRecords(records);
+  showToast('Registro eliminado', 'info');
+  if (from === 'home') renderHistory();
+  else if (from === 'agentes') renderHistoryAgentes();
+  else if (from === 'sucursales') renderHistorySuc();
+}
+
 // ══ DETAIL ══
 function openDetail(id) {
   try {
-  currentDetailId = id;
-  const records = getRecords();
-  const r = records.find(x => x.id === id);
-  if (!r) return;
-  const body = document.getElementById('detail-body');
-  const fotosHTML = (r.fotos && r.fotos.length) ? `<div class="detail-section-title">FOTOS</div><div style="display:flex;flex-wrap:wrap;gap:8px">${r.fotos.map(src=>`<img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">`).join('')}</div>` : '';
+    currentDetailId = id;
+    const records = getRecords();
+    const r = records.find(x => x.id === id);
+    if (!r) return;
+    const body = document.getElementById('detail-body');
+    const fotosHTML = (r.fotos && r.fotos.length)
+      ? `<div class="detail-section-title">FOTOS</div><div style="display:flex;flex-wrap:wrap;gap:8px">${r.fotos.map(src => `<img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">`).join('')}</div>`
+      : '';
 
-  if (r.type && r.type.startsWith('suc-')) {
-    document.getElementById('detail-title').textContent = r.label;
-    body.innerHTML = `
-      <div class="detail-section-title">DATOS</div>
-      <div class="detail-field"><div class="df-label">Centro / Stand</div><div class="df-val">${r.stand}</div></div>
-      <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r.cajero}</div></div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha?r.fecha.split('-').reverse().join('/'):'—'}</div></div>
-        <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora||'—'}</div></div>
-      </div>
-      ${r.obs?`<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>`:''}
-      <div class="detail-section-title">FIRMAS</div>
-      ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
-      ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
-      ${fotosHTML}`;
-    showScreen('detail'); return;
-  }
+    if (r.type && r.type.startsWith('suc-')) {
+      document.getElementById('detail-title').textContent = r.label || 'Sucursal';
+      body.innerHTML = `
+        <div class="detail-section-title">DATOS</div>
+        <div class="detail-field"><div class="df-label">Centro / Stand</div><div class="df-val">${r.stand || '—'}</div></div>
+        <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r.cajero || '—'}</div></div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
+          <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora || '—'}</div></div>
+        </div>
+        ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
+        <div class="detail-section-title">FIRMAS</div>
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
+        ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${fotosHTML}`;
+      showScreen('detail'); return;
+    }
 
-  if (r.type === 'agenteATM') {
-    document.getElementById('detail-title').textContent = 'Arqueo ATM';
-    const remTotal = (r.remBilletes||[]).reduce((a,b)=>a+b.imp,0);
-    const recTotal = (r.recBilletes||[]).reduce((a,b)=>a+b.imp,0);
-    body.innerHTML = `
-      <div class="detail-section-title">DATOS</div>
-      <div class="row-2">
+    if (r.type === 'agenteATM') {
+      document.getElementById('detail-title').textContent = 'Arqueo ATM';
+      const remTotal = (r.remBilletes || []).reduce((a, b) => a + b.imp, 0);
+      const recTotal = (r.recBilletes || []).reduce((a, b) => a + b.imp, 0);
+      body.innerHTML = `
+        <div class="detail-section-title">DATOS</div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
+          <div class="detail-field"><div class="df-label">ID ATM</div><div class="df-val">${r.idAtm || '—'}</div></div>
+        </div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
+          <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora || '—'}</div></div>
+        </div>
+        <div class="totals-box" style="margin-top:8px">
+          <div class="trow"><span class="tlabel">Total Remanente</span><span class="tval">$${fmt(remTotal)}</span></div>
+          <div class="trow"><span class="tlabel">Total Recarga</span><span class="tval">$${fmt(recTotal)}</span></div>
+        </div>
+        ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
+        <div class="detail-section-title">FIRMAS</div>
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
+        ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${fotosHTML}`;
+      showScreen('detail'); return;
+    }
+
+    if (r.type === 'agenteTesoro') {
+      document.getElementById('detail-title').textContent = 'Tesoro ATM';
+      const aptTotal = (r.aptosBilletes || []).reduce((a, b) => a + b.imp, 0);
+      const noAptTotal = (r.noAptosBilletes || []).reduce((a, b) => a + b.imp, 0);
+      body.innerHTML = `
+        <div class="detail-section-title">DATOS</div>
         <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
-        <div class="detail-field"><div class="df-label">ID ATM</div><div class="df-val">${r.idAtm||'—'}</div></div>
-      </div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha?r.fecha.split('-').reverse().join('/'):'—'}</div></div>
-        <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora||'—'}</div></div>
-      </div>
-      <div class="totals-box" style="margin-top:8px">
-        <div class="trow"><span class="tlabel">Total Remanente</span><span class="tval">$${fmt(remTotal)}</span></div>
-        <div class="trow"><span class="tlabel">Total Recarga</span><span class="tval">$${fmt(recTotal)}</span></div>
-      </div>
-      ${r.obs?`<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>`:''}
-      <div class="detail-section-title">FIRMAS</div>
-      ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
-      ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
-      ${fotosHTML}`;
-    showScreen('detail'); return;
-  }
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
+          <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora || '—'}</div></div>
+        </div>
+        <div class="totals-box" style="margin-top:8px">
+          <div class="trow"><span class="tlabel">Total Aptos</span><span class="tval pos">$${fmt(aptTotal)}</span></div>
+          <div class="trow"><span class="tlabel">Total No Aptos</span><span class="tval neg">$${fmt(noAptTotal)}</span></div>
+        </div>
+        ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
+        <div class="detail-section-title">FIRMAS</div>
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
+        ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${fotosHTML}`;
+      showScreen('detail'); return;
+    }
 
-  if (r.type === 'agenteTesoro') {
-    document.getElementById('detail-title').textContent = 'Tesoro ATM';
-    const aptTotal = (r.aptosBilletes||[]).reduce((a,b)=>a+b.imp,0);
-    const noAptTotal = (r.noAptosBilletes||[]).reduce((a,b)=>a+b.imp,0);
-    body.innerHTML = `
-      <div class="detail-section-title">DATOS</div>
-      <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha?r.fecha.split('-').reverse().join('/'):'—'}</div></div>
-        <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora||'—'}</div></div>
-      </div>
-      <div class="totals-box" style="margin-top:8px">
-        <div class="trow"><span class="tlabel">Total Aptos</span><span class="tval pos">$${fmt(aptTotal)}</span></div>
-        <div class="trow"><span class="tlabel">Total No Aptos</span><span class="tval neg">$${fmt(noAptTotal)}</span></div>
-      </div>
-      ${r.obs?`<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>`:''}
-      <div class="detail-section-title">FIRMAS</div>
-      ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
-      ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
-      ${fotosHTML}`;
-    showScreen('detail'); return;
-  }
-
-  // arqueo / entrega
-  document.getElementById('detail-title').textContent = r.type === 'arqueo' ? 'Arqueo de Caja' : 'Entrega a Transportadora';
-  if (r.type === 'arqueo') {
-    const dif = parseFloat(r.diferencia) || 0;
-    body.innerHTML = `
-      <div class="detail-section-title">DATOS DEL ARQUEO</div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
-        <div class="detail-field"><div class="df-label">Puesto</div><div class="df-val">${r.puesto}</div></div>
-      </div>
-      <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r.cajero}</div></div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
-        <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora}</div></div>
-      </div>
-      <div class="totals-box" style="margin-top:8px">
-        <div class="trow"><span class="tlabel">Total Recontado</span><span class="tval">$${fmt(parseFloat(r.recontado)||0)}</span></div>
-        <div class="trow"><span class="tlabel">Cierre de Caja</span><span class="tval">$${fmt(parseFloat(r.cierre)||0)}</span></div>
-        <div class="trow"><span class="tlabel">Diferencia</span><span class="tval ${dif>0?'pos':dif<0?'neg':'zero'}">${dif>=0?'+':''} $${fmt(dif)}</span></div>
-      </div>
-      ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
-      <div class="detail-section-title">FIRMAS</div>
-      ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
-      ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
-      ${fotosHTML}`;
-  } else {
-    body.innerHTML = `
-      <div class="detail-section-title">DATOS DE ENTREGA</div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
-        <div class="detail-field"><div class="df-label">Remito NRO</div><div class="df-val">${r.remito}</div></div>
-      </div>
-      <div class="row-2">
-        <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
-        <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora}</div></div>
-      </div>
-      <div class="totals-box" style="margin-top:8px">
-        <div class="trow"><span class="tlabel">Total Entregado</span><span class="tval pos">$${fmt(parseFloat(r.total)||0)}</span></div>
-      </div>
-      ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
-      <div class="detail-section-title">FIRMAS</div>
-      ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
-      ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
-      ${fotosHTML}`;
-  }
-  showScreen('detail');
+    document.getElementById('detail-title').textContent = r.type === 'arqueo' ? 'Arqueo de Caja' : 'Entrega a Transportadora';
+    if (r.type === 'arqueo') {
+      const dif = parseFloat(r.diferencia) || 0;
+      body.innerHTML = `
+        <div class="detail-section-title">DATOS DEL ARQUEO</div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
+          <div class="detail-field"><div class="df-label">Puesto</div><div class="df-val">${r.puesto}</div></div>
+        </div>
+        <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r.cajero}</div></div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
+          <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora}</div></div>
+        </div>
+        <div class="totals-box" style="margin-top:8px">
+          <div class="trow"><span class="tlabel">Total Recontado</span><span class="tval">$${fmt(parseFloat(r.recontado) || 0)}</span></div>
+          <div class="trow"><span class="tlabel">Cierre de Caja</span><span class="tval">$${fmt(parseFloat(r.cierre) || 0)}</span></div>
+          <div class="trow"><span class="tlabel">Diferencia</span><span class="tval ${dif > 0 ? 'pos' : dif < 0 ? 'neg' : 'zero'}">${dif >= 0 ? '+' : ''} $${fmt(dif)}</span></div>
+        </div>
+        ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
+        <div class="detail-section-title">FIRMAS</div>
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
+        ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${fotosHTML}`;
+    } else {
+      body.innerHTML = `
+        <div class="detail-section-title">DATOS DE ENTREGA</div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Agente</div><div class="df-val">${r.agente}</div></div>
+          <div class="detail-field"><div class="df-label">Remito NRO</div><div class="df-val">${r.remito}</div></div>
+        </div>
+        <div class="row-2">
+          <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r.fecha ? r.fecha.split('-').reverse().join('/') : '—'}</div></div>
+          <div class="detail-field"><div class="df-label">Hora</div><div class="df-val">${r.hora}</div></div>
+        </div>
+        <div class="totals-box" style="margin-top:8px">
+          <div class="trow"><span class="tlabel">Total Entregado</span><span class="tval pos">$${fmt(parseFloat(r.total) || 0)}</span></div>
+        </div>
+        ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
+        <div class="detail-section-title">FIRMAS</div>
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
+        ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${fotosHTML}`;
+    }
+    showScreen('detail');
   } catch(e) {
-    // Registro antiguo o con datos incompletos — mostrar info básica igual
     const r2 = getRecords().find(x => x.id === id);
     const body = document.getElementById('detail-body');
     document.getElementById('detail-title').textContent = 'Registro';
@@ -2342,9 +2457,8 @@ function openDetail(id) {
       <div class="detail-field"><div class="df-label">Tipo</div><div class="df-val">${r2?.type || '—'}</div></div>
       <div class="detail-field"><div class="df-label">Agente / Stand</div><div class="df-val">${r2?.agente || r2?.stand || '—'}</div></div>
       <div class="detail-field"><div class="df-label">Fecha</div><div class="df-val">${r2?.fecha ? r2.fecha.split('-').reverse().join('/') : '—'}</div></div>
-      <div class="detail-field"><div class="df-label">Cajero</div><div class="df-val">${r2?.cajero || '—'}</div></div>
       <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px;font-size:13px;color:var(--text2)">
-        Este registro fue generado con una versión anterior de la app. El PDF puede regenerarse desde el historial.
+        Registro con datos incompletos. Podés eliminarlo con el botón de abajo.
       </div>`;
     showScreen('detail');
   }
@@ -2376,6 +2490,8 @@ function exportPDF() {
   const records = getRecords();
   const r = records.find(x => x.id === currentDetailId);
   if (!r) return;
+  // Para exportar desde detalle, las fotos ya no están en memoria
+  // El PDF se genera con los datos disponibles (sin fotos si la sesión cerró)
   if (r.type === 'arqueo') generateArqueoPDF(r);
   else if (r.type === 'entrega') generateEntregaPDF(r);
   else if (r.type === 'agenteATM') generateAgenteATMPDF(r);
@@ -2384,96 +2500,94 @@ function exportPDF() {
 }
 
 // ══ PDF GENERATION ══
-function generateArqueoPDF(r) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const W = 210, m = 20;
+function pdfHeader(doc, W, m, title) {
   let y = 20;
-
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
+  doc.setFontSize(18);
   doc.text('gire', m, y);
-  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
   doc.setTextColor(150);
-  doc.text('Soluciones de Pago', m + 14, y);
+  doc.text('Soluciones de Pago', m + 12, y);
   doc.setTextColor(0);
   y += 8;
-
-  // Title bar
   doc.setFillColor(240, 240, 240);
-  doc.rect(m, y, W - 2*m, 8, 'F');
+  doc.rect(m, y, W - 2 * m, 8, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('ARQUEO DE CAJA', W/2, y + 5.5, { align: 'center' });
-  y += 14;
-
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  const fields = [
-    ['AGENTE:', r.agente], ['CAJERO:', r.cajero],
-    ['PUESTO DE CAJA:', r.puesto],
-    ['FECHA:', r.fecha ? r.fecha.split('-').reverse().join('/') : ''],
-    ['HORA DEL ARQUEO:', r.hora]
-  ];
-  fields.forEach(([l, v]) => {
-    doc.setFont('helvetica', 'bold'); doc.text(l, m, y);
-    doc.setFont('helvetica', 'normal'); doc.text(v || '', m + 38, y);
-    y += 7;
-  });
+  doc.text(title.toUpperCase(), W / 2, y + 5.5, { align: 'center' });
+  return y + 14;
+}
+
+function pdfSigs(doc, r, y, W, m) {
+  if (y > 240) { doc.addPage(); y = 20; }
   y += 4;
-
-  // Totals table
-  const cols = [m, m + 90, W - m];
-  const rowH = 8;
-  const rows = [
-    ['TOTAL RECONTADO', '$' + fmt(parseFloat(r.recontado)||0)],
-    ['CIERRE DE CAJA', '$' + fmt(parseFloat(r.cierre)||0)],
-    ['DIFERENCIA', (parseFloat(r.diferencia)>=0?'+':'-') + '$' + fmt(Math.abs(parseFloat(r.diferencia)||0))]
-  ];
-  rows.forEach(([label, val], i) => {
-    if (i % 2 === 0) { doc.setFillColor(248,248,248); doc.rect(m, y-5, W-2*m, rowH, 'F'); }
-    doc.setDrawColor(200); doc.rect(m, y-5, W-2*m, rowH);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.text(label, m+3, y);
-    doc.setFont('helvetica', 'normal'); doc.text(val, cols[2]-3, y, { align: 'right' });
-    y += rowH;
-  });
-  y += 6;
-
-  if (r.obs) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold'); doc.text('Observaciones:', m, y);
-    doc.setFont('helvetica', 'normal'); doc.text(r.obs, m, y + 6);
-    y += 18;
-  }
-  y += 6;
-
-  // Signatures
-  const sigW = 75, sigH = 25;
-  const col1 = m, col2 = W - m - sigW;
-
-  doc.setDrawColor(180); doc.line(col1, y + sigH, col1 + sigW, y + sigH);
+  doc.setFontSize(8); doc.setTextColor(120);
+  doc.text('Los valores indicados fueron arqueados en mi presencia y me fueron devueltos intactos.', m, y);
+  y += 10; doc.setTextColor(0);
+  const sigW = 75, sigH = 25, col1 = m, col2 = W - m - sigW;
+  doc.setDrawColor(180);
+  doc.line(col1, y + sigH, col1 + sigW, y + sigH);
   doc.line(col2, y + sigH, col2 + sigW, y + sigH);
-
-  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor, 'PNG', col1, y, sigW, sigH); } catch(e){} }
-  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado, 'PNG', col2, y, sigW, sigH); } catch(e){} }
+  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor, 'JPEG', col1, y, sigW, sigH); } catch(e) {} }
+  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado, 'JPEG', col2, y, sigW, sigH); } catch(e) {} }
   y += sigH + 3;
-
   doc.setFontSize(8);
   doc.text('Firma, DNI y aclaración del auditor', col1, y);
   doc.text('Firma, DNI y aclaración del auditado', col2, y);
   y += 5;
   if (r.auditorNombre) doc.text(r.auditorNombre, col1, y);
   if (r.auditadoNombre) doc.text(r.auditadoNombre, col2, y);
+  return y;
+}
 
-  if (r.fotos && r.fotos.length) {
-    doc.addPage(); let yf = 20;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf += 10;
-    r.fotos.forEach(src => {
-      try { if (yf + 70 > 280) { doc.addPage(); yf = 20; } doc.addImage(src,'JPEG',m,yf,80,65); yf += 72; } catch(e){}
-    });
+function pdfFotos(doc, fotos, m) {
+  if (!fotos || !fotos.length) return;
+  doc.addPage();
+  let yf = 20;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf += 10;
+  fotos.forEach(src => {
+    try {
+      if (yf + 70 > 280) { doc.addPage(); yf = 20; }
+      doc.addImage(src, 'JPEG', m, yf, 80, 65); yf += 72;
+    } catch(e) {}
+  });
+}
+
+function generateArqueoPDF(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, m = 20;
+  let y = pdfHeader(doc, W, m, 'ARQUEO DE CAJA');
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  [['AGENTE:', r.agente], ['CAJERO:', r.cajero], ['PUESTO DE CAJA:', r.puesto],
+   ['FECHA:', r.fecha ? r.fecha.split('-').reverse().join('/') : ''], ['HORA:', r.hora]
+  ].forEach(([l, v]) => {
+    doc.setFont('helvetica', 'bold'); doc.text(l, m, y);
+    doc.setFont('helvetica', 'normal'); doc.text(v || '', m + 38, y); y += 7;
+  });
+  y += 4;
+
+  const rowH = 8;
+  [['TOTAL RECONTADO', '$' + fmt(parseFloat(r.recontado) || 0)],
+   ['CIERRE DE CAJA', '$' + fmt(parseFloat(r.cierre) || 0)],
+   ['DIFERENCIA', (parseFloat(r.diferencia) >= 0 ? '+' : '-') + '$' + fmt(Math.abs(parseFloat(r.diferencia) || 0))]
+  ].forEach(([label, val], i) => {
+    if (i % 2 === 0) { doc.setFillColor(248, 248, 248); doc.rect(m, y - 5, W - 2 * m, rowH, 'F'); }
+    doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, rowH);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.text(label, m + 3, y);
+    doc.setFont('helvetica', 'normal'); doc.text(val, W - m - 3, y, { align: 'right' }); y += rowH;
+  });
+  y += 6;
+
+  if (r.obs) {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('Observaciones:', m, y);
+    doc.setFont('helvetica', 'normal'); doc.text(r.obs, m, y + 6); y += 18;
   }
 
+  pdfSigs(doc, r, y, W, m);
+  pdfFotos(doc, r.fotos, m);
   doc.save(`Arqueo_${r.agente}_${r.fecha || 'fecha'}.pdf`);
   showToast('✓ PDF generado', 'success');
 }
@@ -2482,134 +2596,118 @@ function generateEntregaPDF(r) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const W = 210, m = 20;
-  let y = 20;
+  let y = pdfHeader(doc, W, m, 'ENTREGA DE VALORES A LA EMPRESA TRANSPORTADORA');
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.text('gire', m, y);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(150);
-  doc.text('Soluciones de Pago', m + 14, y);
-  doc.setTextColor(0);
-  y += 8;
-
-  doc.setFillColor(240, 240, 240);
-  doc.rect(m, y, W - 2*m, 8, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('ENTREGA DE VALORES A LA EMPRESA TRANSPORTADORA DE CAUDALES', W/2, y + 5.5, { align: 'center' });
-  y += 14;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  [['AGENTE:', r.agente], ['REMITO NRO:', r.remito]].forEach(([l,v]) => {
-    doc.setFont('helvetica','bold'); doc.text(l, m, y);
-    doc.setFont('helvetica','normal'); doc.text(v||'', m+28, y);
-    y += 7;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  [['AGENTE:', r.agente], ['REMITO NRO:', r.remito]].forEach(([l, v]) => {
+    doc.setFont('helvetica', 'bold'); doc.text(l, m, y);
+    doc.setFont('helvetica', 'normal'); doc.text(v || '', m + 28, y); y += 7;
   });
   y += 4;
 
-  const rowH = 8;
-  [['FECHA', r.fecha ? r.fecha.split('-').reverse().join('/') : ''], ['HORA DE LA ENTREGA', r.hora], ['TOTAL ENTREGADO', '$' + fmt(parseFloat(r.total)||0)]].forEach(([label,val],i) => {
-    if (i % 2 === 0) { doc.setFillColor(248,248,248); doc.rect(m, y-5, W-2*m, rowH, 'F'); }
-    doc.setDrawColor(200); doc.rect(m, y-5, W-2*m, rowH);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(label, m+3, y);
-    doc.setFont('helvetica','normal'); doc.text(val, W-m-3, y, { align:'right' });
-    y += rowH;
+  [['FECHA', r.fecha ? r.fecha.split('-').reverse().join('/') : ''],
+   ['HORA DE LA ENTREGA', r.hora],
+   ['TOTAL ENTREGADO', '$' + fmt(parseFloat(r.total) || 0)]
+  ].forEach(([label, val], i) => {
+    if (i % 2 === 0) { doc.setFillColor(248, 248, 248); doc.rect(m, y - 5, W - 2 * m, 8, 'F'); }
+    doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, 8);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.text(label, m + 3, y);
+    doc.setFont('helvetica', 'normal'); doc.text(val, W - m - 3, y, { align: 'right' }); y += 8;
   });
   y += 8;
 
   if (r.obs) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica','bold'); doc.text('Observaciones:', m, y);
-    doc.setFont('helvetica','normal'); doc.text(r.obs, m, y+6);
-    y += 18;
-  }
-  y += 10;
-
-  const sigW = 75, sigH = 25;
-  const col1 = m, col2 = W - m - sigW;
-  doc.setDrawColor(180); doc.line(col1, y + sigH, col1 + sigW, y + sigH);
-  doc.line(col2, y + sigH, col2 + sigW, y + sigH);
-  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor, 'PNG', col1, y, sigW, sigH); } catch(e){} }
-  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado, 'PNG', col2, y, sigW, sigH); } catch(e){} }
-  y += sigH + 3;
-  doc.setFontSize(8);
-  doc.text('Firma, DNI y aclaración del auditor', col1, y);
-  doc.text('Firma, DNI y aclaración del auditado', col2, y);
-  y += 5;
-  if (r.auditorNombre) doc.text(r.auditorNombre, col1, y);
-  if (r.auditadoNombre) doc.text(r.auditadoNombre, col2, y);
-
-  if (r.fotos && r.fotos.length) {
-    doc.addPage(); let yf = 20;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf += 10;
-    r.fotos.forEach(src => {
-      try { if (yf + 70 > 280) { doc.addPage(); yf = 20; } doc.addImage(src,'JPEG',m,yf,80,65); yf += 72; } catch(e){}
-    });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('Observaciones:', m, y);
+    doc.setFont('helvetica', 'normal'); doc.text(r.obs, m, y + 6); y += 18;
   }
 
-  doc.save(`Entrega_${r.agente}_${r.fecha||'fecha'}.pdf`);
+  pdfSigs(doc, r, y, W, m);
+  pdfFotos(doc, r.fotos, m);
+  doc.save(`Entrega_${r.agente}_${r.fecha || 'fecha'}.pdf`);
   showToast('✓ PDF generado', 'success');
 }
 
-// ══ TOAST ══
-function showToast(msg, type = 'info') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+// ══ BILLETES ══
+const BILLETES_STD = [20000, 10000, 2000, 1000, 500, 200, 100, 50, 20, 10];
+const BILLETES_ATM = [20000, 10000, 2000, 1000, 500];
+const BILLETES_ATM_PURGADOS = ['PURGADOS $20.000', 'PURGADOS $10.000', 'PURGADOS $2.000', 'PURGADOS $1.000', 'PURGADOS $500'];
+const BILLETES_QIWI = [1000, 500, 200, 100, 50, 20, 10, 5, 2];
+
+const SUC_LABELS = {
+  cambio: 'Fondo para Cambio', gastos: 'Fondos para Gastos', reserva: 'Fondo de Reserva',
+  cajasuc: 'Arqueo de Caja', atm: 'Arqueo ATM', tarjetas: 'Tarjetas Retenidas ATM',
+  tesoroatm: 'Tesoro ATM', remesaatm: 'Remesa ATM', remesabanco: 'Remesa Banco/Juanitas',
+  depositos: 'Depósitos ATM', seguridad: 'Seguridad Física', revtc: 'Revisión TC', qiwi: 'Arqueo QIWI'
+};
+const SUC_ICONS = {
+  cambio: '💵', gastos: '🧾', reserva: '🏦', cajasuc: '🗃️', atm: '🏧', tarjetas: '💳',
+  tesoroatm: '🔐', remesaatm: '📦', remesabanco: '🏛️', depositos: '📥', seguridad: '🔒', revtc: '🚚', qiwi: '📟'
+};
+
+let sgComprobantes = [];
+let sgFotos = [];
+let stcTalonarios = [];
+
+function buildBilletesGrid(containerId, denominations, prefix, onInput, includesPurgados = false) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  denominations.forEach((d, i) => {
+    const label = includesPurgados && i >= 5 ? BILLETES_ATM_PURGADOS[i - 5] : '$' + d.toLocaleString('es-AR');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr auto 100px;gap:8px;align-items:center;margin-bottom:8px';
+    row.innerHTML = `<span style="font-size:13px;font-family:var(--mono)">${label}</span>
+      <input type="number" id="${prefix}-cant-${i}" placeholder="0" inputmode="numeric" min="0"
+        style="width:70px;text-align:center;padding:8px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono)"
+        oninput="${onInput}">
+      <span style="font-family:var(--mono);font-size:13px;text-align:right" id="${prefix}-imp-${i}">$0</span>`;
+    wrap.appendChild(row);
+    const input = document.getElementById(`${prefix}-cant-${i}`);
+    if (input) {
+      input.addEventListener('input', () => {
+        const qty = parseFloat(input.value) || 0;
+        const val = includesPurgados && i >= 5 ? parseFloat(BILLETES_ATM_PURGADOS[i - 5].replace(/[^0-9]/g, '')) || 0 : d;
+        const impEl = document.getElementById(`${prefix}-imp-${i}`);
+        if (impEl) impEl.textContent = '$' + fmt(qty * val);
+      });
+    }
+  });
+}
+
+function sumBilletes(prefix, denominations, includesPurgados = false) {
+  return denominations.reduce((acc, d, i) => {
+    const qty = parseFloat(document.getElementById(`${prefix}-cant-${i}`)?.value) || 0;
+    const val = includesPurgados && i >= 5 ? parseFloat(BILLETES_ATM_PURGADOS[i - 5].replace(/[^0-9]/g, '')) || 0 : d;
+    return acc + qty * val;
+  }, 0);
+}
+
+function getBilletesData(prefix, denominations, includesPurgados = false) {
+  return denominations.map((d, i) => {
+    const qty = parseFloat(document.getElementById(`${prefix}-cant-${i}`)?.value) || 0;
+    const val = includesPurgados && i >= 5 ? parseFloat(BILLETES_ATM_PURGADOS[i - 5].replace(/[^0-9]/g, '')) || 0 : d;
+    const label = includesPurgados && i >= 5 ? BILLETES_ATM_PURGADOS[i - 5] : '$' + d.toLocaleString('es-AR');
+    return { label, qty, imp: qty * val };
+  });
 }
 
 // ══ AGENTE ATM / TESORO ══
-function openForm(type) {
-  if (type === 'agenteATM' || type === 'agenteTesoro') {
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    showScreen(type);
-    setTimeout(() => {
-      if (type === 'agenteATM') {
-        aatFotos = []; const w1=document.getElementById('aat-fotos-wrap'); if(w1) w1.innerHTML='';
-        document.getElementById('aat-fecha').value = dateStr;
-        ['aat-agente','aat-id','aat-obs','aat-auditor-nombre','aat-auditado-nombre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-        buildBilletesGrid('aat-rem-wrap', [...BILLETES_ATM,...BILLETES_ATM], 'aat-rem', 'calcAgenteATM()', true);
-        buildBilletesGrid('aat-rec-wrap', BILLETES_ATM, 'aat-rec', 'calcAgenteATM()');
-        initSig('sig-auditor-aat','ph-auditor-aat');
-        initSig('sig-auditado-aat','ph-auditado-aat');
-      } else {
-        ateFotos = []; const w2=document.getElementById('ate-fotos-wrap'); if(w2) w2.innerHTML='';
-        document.getElementById('ate-fecha').value = dateStr;
-        ['ate-agente','ate-obs','ate-auditor-nombre','ate-auditado-nombre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-        buildBilletesGrid('ate-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-aptos', 'calcAgenteTesoro()');
-        buildBilletesGrid('ate-noaptos-wrap', [20000,10000,2000,1000,500,200,100], 'ate-noaptos', 'calcAgenteTesoro()');
-        initSig('sig-auditor-ate','ph-auditor-ate');
-        initSig('sig-auditado-ate','ph-auditado-ate');
-      }
-    }, 100);
-    return;
-  }
-  setDefaults(type);
-  showScreen(type);
-  setTimeout(() => {
-    initSig('sig-auditor-' + type, 'ph-auditor-' + type);
-    initSig('sig-auditado-' + type, 'ph-auditado-' + type);
-  }, 100);
-}
-
 function calcAgenteATM() {
-  const rem = sumBilletes('aat-rem', [...BILLETES_ATM,...BILLETES_ATM], true);
-  document.getElementById('aat-rem-total').textContent = '$'+fmt(rem);
+  const rem = sumBilletes('aat-rem', [...BILLETES_ATM, ...BILLETES_ATM], true);
+  const remEl = document.getElementById('aat-rem-total');
+  if (remEl) remEl.textContent = '$' + fmt(rem);
   const rec = sumBilletes('aat-rec', BILLETES_ATM);
-  document.getElementById('aat-rec-total').textContent = '$'+fmt(rec);
+  const recEl = document.getElementById('aat-rec-total');
+  if (recEl) recEl.textContent = '$' + fmt(rec);
 }
 
 function calcAgenteTesoro() {
-  const apt = sumBilletes('ate-aptos', [20000,10000,2000,1000,500,200,100]);
-  document.getElementById('ate-aptos-total').textContent = '$'+fmt(apt);
-  const noapt = sumBilletes('ate-noaptos', [20000,10000,2000,1000,500,200,100]);
-  document.getElementById('ate-noaptos-total').textContent = '$'+fmt(noapt);
+  const apt = sumBilletes('ate-aptos', [20000, 10000, 2000, 1000, 500, 200, 100]);
+  const aptEl = document.getElementById('ate-aptos-total');
+  if (aptEl) aptEl.textContent = '$' + fmt(apt);
+  const noapt = sumBilletes('ate-noaptos', [20000, 10000, 2000, 1000, 500, 200, 100]);
+  const noEl = document.getElementById('ate-noaptos-total');
+  if (noEl) noEl.textContent = '$' + fmt(noapt);
 }
 
 function saveAgenteATM() {
@@ -2619,14 +2717,14 @@ function saveAgenteATM() {
     id: Date.now().toString(), type: 'agenteATM',
     agente, idAtm: document.getElementById('aat-id').value.trim(),
     fecha: document.getElementById('aat-fecha').value,
-    hora: document.getElementById('aat-hora').value,
-    remBilletes: getBilletesData('aat-rem', [...BILLETES_ATM,...BILLETES_ATM], true),
+    hora: document.getElementById('aat-hora')?.value || '',
+    remBilletes: getBilletesData('aat-rem', [...BILLETES_ATM, ...BILLETES_ATM], true),
     recBilletes: getBilletesData('aat-rec', BILLETES_ATM),
     obs: document.getElementById('aat-obs').value.trim(),
     auditorNombre: document.getElementById('aat-auditor-nombre').value.trim(),
     auditadoNombre: document.getElementById('aat-auditado-nombre').value.trim(),
-    sigAuditor: getSigData('sig-auditor-aat'),
-    sigAuditado: getSigData('sig-auditado-aat'),
+    sigAuditor: getSigDataSmall('sig-auditor-aat'),
+    sigAuditado: getSigDataSmall('sig-auditado-aat'),
     fotos: [...aatFotos],
     createdAt: new Date().toISOString()
   };
@@ -2642,14 +2740,14 @@ function saveAgenteTesoro() {
     id: Date.now().toString(), type: 'agenteTesoro',
     agente,
     fecha: document.getElementById('ate-fecha').value,
-    hora: document.getElementById('ate-hora').value,
-    aptosBilletes: getBilletesData('ate-aptos', [20000,10000,2000,1000,500,200,100]),
-    noAptosBilletes: getBilletesData('ate-noaptos', [20000,10000,2000,1000,500,200,100]),
+    hora: document.getElementById('ate-hora')?.value || '',
+    aptosBilletes: getBilletesData('ate-aptos', [20000, 10000, 2000, 1000, 500, 200, 100]),
+    noAptosBilletes: getBilletesData('ate-noaptos', [20000, 10000, 2000, 1000, 500, 200, 100]),
     obs: document.getElementById('ate-obs').value.trim(),
     auditorNombre: document.getElementById('ate-auditor-nombre').value.trim(),
     auditadoNombre: document.getElementById('ate-auditado-nombre').value.trim(),
-    sigAuditor: getSigData('sig-auditor-ate'),
-    sigAuditado: getSigData('sig-auditado-ate'),
+    sigAuditor: getSigDataSmall('sig-auditor-ate'),
+    sigAuditado: getSigDataSmall('sig-auditado-ate'),
     fotos: [...ateFotos],
     createdAt: new Date().toISOString()
   };
@@ -2660,271 +2758,182 @@ function saveAgenteTesoro() {
 
 function generateAgenteATMPDF(r) {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-  const W=210, m=20; let y=20;
-  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('gire', m, y);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150); doc.text('Soluciones de Pago', m+12, y); doc.setTextColor(0); y+=8;
-  doc.setFillColor(240,240,240); doc.rect(m, y, W-2*m, 8, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('ARQUEO ATM', W/2, y+5.5, {align:'center'}); y+=14;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, m = 20;
+  let y = pdfHeader(doc, W, m, 'ARQUEO ATM');
   doc.setFontSize(10);
-  [['AGENTE:', r.agente],['ID ATM:', r.idAtm],['FECHA:', r.fecha?r.fecha.split('-').reverse().join('/'):'—'],['HORA:', r.hora]].forEach(([l,v])=>{ doc.setFont('helvetica','bold'); doc.text(l,m,y); doc.setFont('helvetica','normal'); doc.text(v||'',m+28,y); y+=7; });
-  y+=4;
+  [['AGENTE:', r.agente], ['ID ATM:', r.idAtm], ['FECHA:', r.fecha ? r.fecha.split('-').reverse().join('/') : '—'], ['HORA:', r.hora]
+  ].forEach(([l, v]) => { doc.setFont('helvetica', 'bold'); doc.text(l, m, y); doc.setFont('helvetica', 'normal'); doc.text(v || '', m + 28, y); y += 7; });
+  y += 4;
   function billetesTable(data, title) {
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(title, m, y); y+=8;
-    doc.setFillColor(235,235,235); doc.rect(m,y-5,W-2*m,8,'F');
-    doc.setFontSize(9); doc.text('DENOMINACIÓN',m+3,y); doc.text('CANTIDAD',W/2-10,y); doc.text('IMPORTE $',W-m-3,y,{align:'right'}); y+=8;
-    data.forEach(({label,qty,imp})=>{ if(qty===0) return; doc.setFont('helvetica','normal'); doc.setDrawColor(220); doc.rect(m,y-5,W-2*m,7); doc.text(label,m+3,y); doc.text(String(qty),W/2-10,y); doc.text('$'+fmt(imp),W-m-3,y,{align:'right'}); y+=7; }); y+=4;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(title, m, y); y += 8;
+    doc.setFillColor(235, 235, 235); doc.rect(m, y - 5, W - 2 * m, 8, 'F');
+    doc.setFontSize(9); doc.text('DENOMINACIÓN', m + 3, y); doc.text('CANTIDAD', W / 2 - 10, y); doc.text('IMPORTE $', W - m - 3, y, { align: 'right' }); y += 8;
+    data.forEach(({ label, qty, imp }) => {
+      if (qty === 0) return;
+      doc.setFont('helvetica', 'normal'); doc.setDrawColor(220); doc.rect(m, y - 5, W - 2 * m, 7);
+      doc.text(label, m + 3, y); doc.text(String(qty), W / 2 - 10, y); doc.text('$' + fmt(imp), W - m - 3, y, { align: 'right' }); y += 7;
+    }); y += 4;
   }
   billetesTable(r.remBilletes, 'REMANENTE Y PURGADOS');
-  const remTotal = r.remBilletes.reduce((a,b)=>a+b.imp,0);
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL REMANENTE',m+3,y); doc.text('$'+fmt(remTotal),W-m-3,y,{align:'right'}); y+=12;
+  const remTotal = r.remBilletes.reduce((a, b) => a + b.imp, 0);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, 8);
+  doc.text('TOTAL REMANENTE', m + 3, y); doc.text('$' + fmt(remTotal), W - m - 3, y, { align: 'right' }); y += 12;
   billetesTable(r.recBilletes, 'RECARGA');
-  const recTotal = r.recBilletes.reduce((a,b)=>a+b.imp,0);
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL RECARGA',m+3,y); doc.text('$'+fmt(recTotal),W-m-3,y,{align:'right'}); y+=12;
-  if(r.obs){ doc.setFont('helvetica','bold'); doc.text('Observaciones:',m,y); y+=6; doc.setFont('helvetica','normal'); doc.text(r.obs,m,y); y+=10; }
-  y+=4; doc.setFontSize(8); doc.setTextColor(120);
-  doc.text('Los valores indicados precedentemente fueron arqueados en mi presencia',m,y); y+=5;
-  doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.',m,y); y+=10; doc.setTextColor(0);
-  const sigW=75,sigH=25,col1=m,col2=W-m-sigW;
-  doc.setDrawColor(180); doc.line(col1,y+sigH,col1+sigW,y+sigH); doc.line(col2,y+sigH,col2+sigW,y+sigH);
-  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'JPEG',col1,y,sigW,sigH);}catch(e){}}
-  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'JPEG',col2,y,sigW,sigH);}catch(e){}}
-  y+=sigH+3; doc.setFontSize(8);
-  doc.text('Firma, DNI y aclaración del auditor',col1,y); doc.text('Firma, DNI y aclaración del auditado',col2,y); y+=5;
-  if(r.auditorNombre) doc.text(r.auditorNombre,col1,y);
-  if(r.auditadoNombre) doc.text(r.auditadoNombre,col2,y);
-  if(r.fotos&&r.fotos.length){doc.addPage();let yf=20;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('FOTOS',m,yf);yf+=10;r.fotos.forEach(src=>{try{if(yf+70>280){doc.addPage();yf=20;}doc.addImage(src,'JPEG',m,yf,80,65);yf+=72;}catch(e){}});}
-  doc.save(`ArqueoATM_Ag${r.agente}_${r.fecha||'fecha'}.pdf`);
-  showToast('✓ PDF generado','success');
+  const recTotal = r.recBilletes.reduce((a, b) => a + b.imp, 0);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, 8);
+  doc.text('TOTAL RECARGA', m + 3, y); doc.text('$' + fmt(recTotal), W - m - 3, y, { align: 'right' }); y += 12;
+  if (r.obs) { doc.setFont('helvetica', 'bold'); doc.text('Observaciones:', m, y); y += 6; doc.setFont('helvetica', 'normal'); doc.text(r.obs, m, y); y += 10; }
+  pdfSigs(doc, r, y, W, m);
+  pdfFotos(doc, r.fotos, m);
+  doc.save(`ArqueoATM_Ag${r.agente}_${r.fecha || 'fecha'}.pdf`);
+  showToast('✓ PDF generado', 'success');
 }
 
 function generateAgenteTesoroPDF(r) {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-  const W=210, m=20; let y=20;
-  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('gire',m,y);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150); doc.text('Soluciones de Pago',m+12,y); doc.setTextColor(0); y+=8;
-  doc.setFillColor(240,240,240); doc.rect(m,y,W-2*m,8,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('ARQUEO DEL TESORO ATM',W/2,y+5.5,{align:'center'}); y+=14;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, m = 20;
+  let y = pdfHeader(doc, W, m, 'ARQUEO DEL TESORO ATM');
   doc.setFontSize(10);
-  [['AGENTE:',r.agente],['FECHA:',r.fecha?r.fecha.split('-').reverse().join('/'):'—'],['HORA:',r.hora]].forEach(([l,v])=>{ doc.setFont('helvetica','bold'); doc.text(l,m,y); doc.setFont('helvetica','normal'); doc.text(v||'',m+22,y); y+=7; });
-  y+=4;
+  [['AGENTE:', r.agente], ['FECHA:', r.fecha ? r.fecha.split('-').reverse().join('/') : '—'], ['HORA:', r.hora]
+  ].forEach(([l, v]) => { doc.setFont('helvetica', 'bold'); doc.text(l, m, y); doc.setFont('helvetica', 'normal'); doc.text(v || '', m + 22, y); y += 7; });
+  y += 4;
   function billetesTable(data, title) {
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(title,m,y); y+=8;
-    doc.setFillColor(235,235,235); doc.rect(m,y-5,W-2*m,8,'F');
-    doc.setFontSize(9); doc.text('DENOMINACIÓN',m+3,y); doc.text('CANTIDAD',W/2-10,y); doc.text('IMPORTE $',W-m-3,y,{align:'right'}); y+=8;
-    data.forEach(({label,qty,imp})=>{ if(qty===0) return; doc.setFont('helvetica','normal'); doc.setDrawColor(220); doc.rect(m,y-5,W-2*m,7); doc.text(label,m+3,y); doc.text(String(qty),W/2-10,y); doc.text('$'+fmt(imp),W-m-3,y,{align:'right'}); y+=7; }); y+=4;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(title, m, y); y += 8;
+    doc.setFillColor(235, 235, 235); doc.rect(m, y - 5, W - 2 * m, 8, 'F');
+    doc.setFontSize(9); doc.text('DENOMINACIÓN', m + 3, y); doc.text('CANTIDAD', W / 2 - 10, y); doc.text('IMPORTE $', W - m - 3, y, { align: 'right' }); y += 8;
+    data.forEach(({ label, qty, imp }) => {
+      if (qty === 0) return;
+      doc.setFont('helvetica', 'normal'); doc.setDrawColor(220); doc.rect(m, y - 5, W - 2 * m, 7);
+      doc.text(label, m + 3, y); doc.text(String(qty), W / 2 - 10, y); doc.text('$' + fmt(imp), W - m - 3, y, { align: 'right' }); y += 7;
+    }); y += 4;
   }
-  billetesTable(r.aptosBilletes,'APTOS ATM');
-  const aptTotal=r.aptosBilletes.reduce((a,b)=>a+b.imp,0);
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL APTOS',m+3,y); doc.text('$'+fmt(aptTotal),W-m-3,y,{align:'right'}); y+=12;
-  billetesTable(r.noAptosBilletes,'NO APTOS ATM');
-  const noAptTotal=r.noAptosBilletes.reduce((a,b)=>a+b.imp,0);
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m,y-5,W-2*m,8); doc.text('TOTAL NO APTOS',m+3,y); doc.text('$'+fmt(noAptTotal),W-m-3,y,{align:'right'}); y+=12;
-  if(r.obs){ doc.setFont('helvetica','bold'); doc.text('Observaciones:',m,y); y+=6; doc.setFont('helvetica','normal'); doc.text(r.obs,m,y); y+=10; }
-  y+=4; doc.setFontSize(8); doc.setTextColor(120);
-  doc.text('Los valores indicados precedentemente fueron arqueados en mi presencia',m,y); y+=5;
-  doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.',m,y); y+=10; doc.setTextColor(0);
-  const sigW=75,sigH=25,col1=m,col2=W-m-sigW;
-  doc.setDrawColor(180); doc.line(col1,y+sigH,col1+sigW,y+sigH); doc.line(col2,y+sigH,col2+sigW,y+sigH);
-  if(r.sigAuditor){try{doc.addImage(r.sigAuditor,'JPEG',col1,y,sigW,sigH);}catch(e){}}
-  if(r.sigAuditado){try{doc.addImage(r.sigAuditado,'JPEG',col2,y,sigW,sigH);}catch(e){}}
-  y+=sigH+3; doc.setFontSize(8);
-  doc.text('Firma, DNI y aclaración del auditor',col1,y); doc.text('Firma, DNI y aclaración del auditado',col2,y); y+=5;
-  if(r.auditorNombre) doc.text(r.auditorNombre,col1,y);
-  if(r.auditadoNombre) doc.text(r.auditadoNombre,col2,y);
-  if(r.fotos&&r.fotos.length){doc.addPage();let yf=20;doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('FOTOS',m,yf);yf+=10;r.fotos.forEach(src=>{try{if(yf+70>280){doc.addPage();yf=20;}doc.addImage(src,'JPEG',m,yf,80,65);yf+=72;}catch(e){}});}
-  doc.save(`TesoroATM_Ag${r.agente}_${r.fecha||'fecha'}.pdf`);
-  showToast('✓ PDF generado','success');
+  billetesTable(r.aptosBilletes, 'APTOS ATM');
+  const aptTotal = r.aptosBilletes.reduce((a, b) => a + b.imp, 0);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, 8);
+  doc.text('TOTAL APTOS', m + 3, y); doc.text('$' + fmt(aptTotal), W - m - 3, y, { align: 'right' }); y += 12;
+  billetesTable(r.noAptosBilletes, 'NO APTOS ATM');
+  const noAptTotal = r.noAptosBilletes.reduce((a, b) => a + b.imp, 0);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, 8);
+  doc.text('TOTAL NO APTOS', m + 3, y); doc.text('$' + fmt(noAptTotal), W - m - 3, y, { align: 'right' }); y += 12;
+  if (r.obs) { doc.setFont('helvetica', 'bold'); doc.text('Observaciones:', m, y); y += 6; doc.setFont('helvetica', 'normal'); doc.text(r.obs, m, y); y += 10; }
+  pdfSigs(doc, r, y, W, m);
+  pdfFotos(doc, r.fotos, m);
+  doc.save(`TesoroATM_Ag${r.agente}_${r.fecha || 'fecha'}.pdf`);
+  showToast('✓ PDF generado', 'success');
 }
 
-
-const BILLETES_STD = [20000,10000,2000,1000,500,200,100,50,20,10];
-const BILLETES_ATM = [20000,10000,2000,1000,500];
-const BILLETES_ATM_PURGADOS = ['PURGADOS $20.000','PURGADOS $10.000','PURGADOS $2.000','PURGADOS $1.000','PURGADOS $500'];
-const BILLETES_QIWI = [1000,500,200,100,50,20,10,5,2];
-
-const SUC_LABELS = {
-  cambio:'Fondo para Cambio', gastos:'Fondos para Gastos', reserva:'Fondo de Reserva',
-  cajasuc:'Arqueo de Caja', atm:'Arqueo ATM', tarjetas:'Tarjetas Retenidas ATM',
-  tesoroatm:'Tesoro ATM', remesaatm:'Remesa ATM', remesabanco:'Remesa Banco/Juanitas',
-  depositos:'Depósitos ATM', seguridad:'Seguridad Física', revtc:'Revisión TC', qiwi:'Arqueo QIWI'
-};
-const SUC_ICONS = {
-  cambio:'💵',gastos:'🧾',reserva:'🏦',cajasuc:'🗃️',atm:'🏧',tarjetas:'💳',
-  tesoroatm:'🔐',remesaatm:'📦',remesabanco:'🏛️',depositos:'📥',seguridad:'🔒',revtc:'🚚',qiwi:'📟'
-};
-
-let sgComprobantes = [];
-let sgFotos = [];
-let stcTalonarios = [];
-
-function buildBilletesGrid(containerId, denominations, prefix, onInput, includesPurgados=false) {
-  const wrap = document.getElementById(containerId);
-  if (!wrap) return;
-  wrap.innerHTML = '';
-  denominations.forEach((d,i) => {
-    const label = includesPurgados && i >= 5 ? BILLETES_ATM_PURGADOS[i-5] : '$' + d.toLocaleString('es-AR');
-    const row = document.createElement('div');
-    row.style.cssText = 'display:grid;grid-template-columns:1fr auto 100px;gap:8px;align-items:center;margin-bottom:8px';
-    row.innerHTML = `<span style="font-size:13px;font-family:var(--mono)">${label}</span>
-      <input type="number" id="${prefix}-cant-${i}" placeholder="0" inputmode="numeric" min="0"
-        style="width:70px;text-align:center;padding:8px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono)"
-        oninput="${onInput}">
-      <span style="font-family:var(--mono);font-size:13px;text-align:right" id="${prefix}-imp-${i}">$0</span>`;
-    wrap.appendChild(row);
-    document.getElementById(`${prefix}-cant-${i}`).addEventListener('input', () => {
-      const qty = parseFloat(document.getElementById(`${prefix}-cant-${i}`).value)||0;
-      const val = includesPurgados && i>=5 ? parseFloat(BILLETES_ATM_PURGADOS[i-5].replace(/[^0-9]/g,''))||0 : d;
-      document.getElementById(`${prefix}-imp-${i}`).textContent = '$'+fmt(qty*val);
-    });
-  });
-}
-
-function sumBilletes(prefix, denominations, includesPurgados=false) {
-  return denominations.reduce((acc,d,i)=>{
-    const qty = parseFloat(document.getElementById(`${prefix}-cant-${i}`)?.value)||0;
-    const val = includesPurgados && i>=5 ? parseFloat(BILLETES_ATM_PURGADOS[i-5].replace(/[^0-9]/g,''))||0 : d;
-    return acc + qty*val;
-  },0);
-}
-
-function getBilletesData(prefix, denominations, includesPurgados=false) {
-  return denominations.map((d,i)=>({
-    label: includesPurgados && i>=5 ? BILLETES_ATM_PURGADOS[i-5] : '$'+d.toLocaleString('es-AR'),
-    qty: parseFloat(document.getElementById(`${prefix}-cant-${i}`)?.value)||0,
-    imp: (()=>{const qty=parseFloat(document.getElementById(`${prefix}-cant-${i}`)?.value)||0;const val=includesPurgados&&i>=5?parseFloat(BILLETES_ATM_PURGADOS[i-5].replace(/[^0-9]/g,''))||0:d;return qty*val;})()
-  }));
-}
-
+// ══ SUC FORM ══
 function openSucForm(type) {
   const now = new Date();
   const dateStr = now.toISOString().split('T')[0];
-
   showScreen('suc-' + type);
   setTimeout(() => {
-    // init sigs
     const sigIds = document.querySelectorAll(`#screen-suc-${type} canvas`);
     sigIds.forEach(c => {
-      const ph = document.getElementById(c.id.replace('sig-','ph-'));
+      const ph = document.getElementById(c.id.replace('sig-', 'ph-'));
       if (ph) initSig(c.id, ph.id);
     });
-    // set dates
-    const fEl = document.getElementById({cambio:'sc',gastos:'sg',reserva:'sr',cajasuc:'scs',atm:'satm',tarjetas:'st',tesoroatm:'ste',remesaatm:'sra',remesabanco:'srb',depositos:'sd',seguridad:'sseg',revtc:'stc',qiwi:'sq'}[type]+'-fecha');
-    const hEl = document.getElementById({cambio:'sc',gastos:'sg',reserva:'sr',cajasuc:'scs',atm:'satm',tarjetas:'st',tesoroatm:'ste',remesaatm:'sra',remesabanco:'srb',depositos:'sd',seguridad:'sseg',revtc:'stc',qiwi:'sq'}[type]+'-hora');
+    const pMap = { cambio:'sc',gastos:'sg',reserva:'sr',cajasuc:'scs',atm:'satm',tarjetas:'st',tesoroatm:'ste',remesaatm:'sra',remesabanco:'srb',depositos:'sd',seguridad:'sseg',revtc:'stc',qiwi:'sq' };
+    const p = pMap[type];
+    const fEl = document.getElementById(`${p}-fecha`);
     if (fEl) fEl.value = dateStr;
-    
-    // build billete grids
-    if (type==='cambio') buildBilletesGrid('sc-billetes-wrap', BILLETES_STD, 'sc', 'calcCambio()');
-    if (type==='cajasuc') buildBilletesGrid('scs-billetes-wrap', BILLETES_STD, 'scs', 'calcCajaSuc()');
-    if (type==='atm') {
-      buildBilletesGrid('satm-rem-wrap', [...BILLETES_ATM,...BILLETES_ATM], 'satm-rem', 'calcATM()', true);
-      buildBilletesGrid('satm-rec-wrap', BILLETES_ATM, 'satm-rec', 'calcATM()');
-    }
-    if (type==='tesoroatm') buildBilletesGrid('ste-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ste', 'calcTesoroATM()');
-    if (type==='remesaatm') buildBilletesGrid('sra-billetes-wrap', [20000,10000,2000,1000,500,200,100], 'sra', 'calcRemesaATM()');
-    if (type==='qiwi') buildBilletesGrid('sq-billetes-wrap', BILLETES_QIWI, 'sq-bill', 'calcQiwi()');
-    // reset fotos
-  const FOTOS_BY_TYPE = {
-    cambio:scFotos, reserva:srFotos, cajasuc:scsFotos, atm:satmFotos,
-    tesoroatm:steFotos, remesaatm:sraFotos, remesabanco:srbFotos,
-    depositos:sdFotos, seguridad:ssegFotos
-  };
-  const WRAP_BY_TYPE = {
-    cambio:'sc-fotos-wrap', reserva:'sr-fotos-wrap', cajasuc:'scs-fotos-wrap', atm:'satm-fotos-wrap',
-    tesoroatm:'ste-fotos-wrap', remesaatm:'sra-fotos-wrap', remesabanco:'srb-fotos-wrap',
-    depositos:'sd-fotos-wrap', seguridad:'sseg-fotos-wrap'
-  };
-  if (FOTOS_BY_TYPE[type]) { FOTOS_BY_TYPE[type].length = 0; const w=document.getElementById(WRAP_BY_TYPE[type]); if(w) w.innerHTML=''; }
-  if (type==='gastos') { sgComprobantes=[]; sgFotos=[]; renderComprobantes(); renderFotos(); }
-    if (type==='revtc') { stcTalonarios=[]; renderTalonarios(); }
+    if (type === 'cambio') { scFotos.length = 0; const w=document.getElementById('sc-fotos-wrap');if(w)w.innerHTML=''; buildBilletesGrid('sc-billetes-wrap', BILLETES_STD, 'sc', 'calcCambio()'); }
+    if (type === 'cajasuc') { scsFotos.length = 0; const w=document.getElementById('scs-fotos-wrap');if(w)w.innerHTML=''; buildBilletesGrid('scs-billetes-wrap', BILLETES_STD, 'scs', 'calcCajaSuc()'); }
+    if (type === 'atm') { satmFotos.length = 0; const w=document.getElementById('satm-fotos-wrap');if(w)w.innerHTML=''; buildBilletesGrid('satm-rem-wrap', [...BILLETES_ATM,...BILLETES_ATM], 'satm-rem', 'calcATM()', true); buildBilletesGrid('satm-rec-wrap', BILLETES_ATM, 'satm-rec', 'calcATM()'); }
+    if (type === 'tesoroatm') { steFotos.length = 0; const w=document.getElementById('ste-fotos-wrap');if(w)w.innerHTML=''; buildBilletesGrid('ste-aptos-wrap', [20000,10000,2000,1000,500,200,100], 'ste', 'calcTesoroATM()'); }
+    if (type === 'remesaatm') { sraFotos.length = 0; const w=document.getElementById('sra-fotos-wrap');if(w)w.innerHTML=''; buildBilletesGrid('sra-billetes-wrap', [20000,10000,2000,1000,500,200,100], 'sra', 'calcRemesaATM()'); }
+    if (type === 'remesabanco') { srbFotos.length = 0; const w=document.getElementById('srb-fotos-wrap');if(w)w.innerHTML=''; }
+    if (type === 'depositos') { sdFotos.length = 0; const w=document.getElementById('sd-fotos-wrap');if(w)w.innerHTML=''; }
+    if (type === 'seguridad') { ssegFotos.length = 0; const w=document.getElementById('sseg-fotos-wrap');if(w)w.innerHTML=''; }
+    if (type === 'reserva') { srFotos.length = 0; const w=document.getElementById('sr-fotos-wrap');if(w)w.innerHTML=''; }
+    if (type === 'gastos') { sgComprobantes = []; sgFotos = []; renderComprobantes(); renderFotos(); }
+    if (type === 'revtc') { stcTalonarios = []; renderTalonarios(); }
   }, 100);
 }
 
 // calculators
 function calcCambio() {
   const bil = sumBilletes('sc', BILLETES_STD);
-  const mon = parseFloat(document.getElementById('sc-monedas')?.value)||0;
-  const det = parseFloat(document.getElementById('sc-deteriorados')?.value)||0;
+  const mon = parseFloat(document.getElementById('sc-monedas')?.value) || 0;
+  const det = parseFloat(document.getElementById('sc-deteriorados')?.value) || 0;
   const sub = bil + mon + det;
-  document.getElementById('sc-subtotal').textContent = '$'+fmt(sub);
-  const tes = parseFloat(document.getElementById('sc-tesoro')?.value)||0;
-  const ini = parseFloat(document.getElementById('sc-inicio')?.value)||0;
-  const gas = parseFloat(document.getElementById('sc-gastos')?.value)||0;
+  const subEl = document.getElementById('sc-subtotal');
+  if (subEl) subEl.textContent = '$' + fmt(sub);
+  const tes = parseFloat(document.getElementById('sc-tesoro')?.value) || 0;
+  const ini = parseFloat(document.getElementById('sc-inicio')?.value) || 0;
+  const gas = parseFloat(document.getElementById('sc-gastos')?.value) || 0;
   const dif = sub - tes - ini - gas;
   const el = document.getElementById('sc-dif');
-  el.textContent = (dif>=0?'+':'')+'$'+fmt(dif);
-  el.className = 'tval ' + (dif===0?'zero':dif>0?'pos':'neg');
+  if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcCajaSuc() {
   const bil = sumBilletes('scs', BILLETES_STD);
-  const mon = parseFloat(document.getElementById('scs-monedas')?.value)||0;
-  const det = parseFloat(document.getElementById('scs-deteriorados')?.value)||0;
-  const tot = bil+mon+det;
-  document.getElementById('scs-recontado-display').textContent = '$'+fmt(tot);
-  const cie = parseFloat(document.getElementById('scs-cierre')?.value)||0;
-  const dif = tot-cie;
+  const mon = parseFloat(document.getElementById('scs-monedas')?.value) || 0;
+  const det = parseFloat(document.getElementById('scs-deteriorados')?.value) || 0;
+  const tot = bil + mon + det;
+  const rEl = document.getElementById('scs-recontado-display');
+  if (rEl) rEl.textContent = '$' + fmt(tot);
+  const cie = parseFloat(document.getElementById('scs-cierre')?.value) || 0;
+  const dif = tot - cie;
   const el = document.getElementById('scs-dif');
-  el.textContent = (dif>=0?'+':'')+'$'+fmt(dif);
-  el.className = 'tval '+(dif===0?'zero':dif>0?'pos':'neg');
+  if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcReserva() {
-  const r = parseFloat(document.getElementById('sr-recontado')?.value)||0;
-  const e = parseFloat(document.getElementById('sr-esperado')?.value)||0;
-  const dif = r-e;
+  const r = parseFloat(document.getElementById('sr-recontado')?.value) || 0;
+  const e = parseFloat(document.getElementById('sr-esperado')?.value) || 0;
+  const dif = r - e;
   const el = document.getElementById('sr-dif');
-  el.textContent = (dif>=0?'+':'')+'$'+fmt(dif);
-  el.className='tval '+(dif===0?'zero':dif>0?'pos':'neg');
+  if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcATM() {
-  const rem = sumBilletes('satm-rem', [...BILLETES_ATM,...BILLETES_ATM], true);
-  document.getElementById('satm-rem-total').textContent = '$'+fmt(rem);
+  const rem = sumBilletes('satm-rem', [...BILLETES_ATM, ...BILLETES_ATM], true);
+  const remEl = document.getElementById('satm-rem-total');
+  if (remEl) remEl.textContent = '$' + fmt(rem);
   const rec = sumBilletes('satm-rec', BILLETES_ATM);
-  document.getElementById('satm-rec-total').textContent = '$'+fmt(rec);
+  const recEl = document.getElementById('satm-rec-total');
+  if (recEl) recEl.textContent = '$' + fmt(rec);
 }
 function calcTesoroATM() {
-  const tot = sumBilletes('ste', [20000,10000,2000,1000,500,200,100]);
-  document.getElementById('ste-aptos-total').textContent = '$'+fmt(tot);
+  const tot = sumBilletes('ste', [20000, 10000, 2000, 1000, 500, 200, 100]);
+  const el = document.getElementById('ste-aptos-total');
+  if (el) el.textContent = '$' + fmt(tot);
 }
 function calcRemesaATM() {
-  const tot = sumBilletes('sra', [20000,10000,2000,1000,500,200,100]);
-  document.getElementById('sra-recontado-display').textContent = '$'+fmt(tot);
-  const esp = parseFloat(document.getElementById('sra-esperado')?.value)||0;
-  const dif = tot-esp;
+  const tot = sumBilletes('sra', [20000, 10000, 2000, 1000, 500, 200, 100]);
+  const rEl = document.getElementById('sra-recontado-display');
+  if (rEl) rEl.textContent = '$' + fmt(tot);
+  const esp = parseFloat(document.getElementById('sra-esperado')?.value) || 0;
+  const dif = tot - esp;
   const el = document.getElementById('sra-dif');
-  el.textContent = (dif>=0?'+':'')+'$'+fmt(dif);
-  el.className='tval '+(dif===0?'zero':dif>0?'pos':'neg');
+  if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcDepositos() {
-  const r = parseFloat(document.getElementById('sd-recontado')?.value)||0;
-  const e = parseFloat(document.getElementById('sd-esperado')?.value)||0;
-  const dif = r-e;
+  const r = parseFloat(document.getElementById('sd-recontado')?.value) || 0;
+  const e = parseFloat(document.getElementById('sd-esperado')?.value) || 0;
+  const dif = r - e;
   const el = document.getElementById('sd-dif');
-  el.textContent = (dif>=0?'+':'')+'$'+fmt(dif);
-  el.className='tval '+(dif===0?'zero':dif>0?'pos':'neg');
+  if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcQiwi() {
-  const r = parseFloat(document.getElementById('sq-recontado')?.value)||0;
-  const e = parseFloat(document.getElementById('sq-esperado')?.value)||0;
-  const dif = r-e;
+  const r = parseFloat(document.getElementById('sq-recontado')?.value) || 0;
+  const e = parseFloat(document.getElementById('sq-esperado')?.value) || 0;
+  const dif = r - e;
   const el = document.getElementById('sq-dif');
-  el.textContent = (dif>=0?'+':'')+'$'+fmt(dif);
-  el.className='tval '+(dif===0?'zero':dif>0?'pos':'neg');
+  if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 
-// comprobantes (gastos)
-function addComprobante() {
-  sgComprobantes.push({fecha:'',desc:'',importe:''});
-  renderComprobantes();
-}
+// comprobantes
+function addComprobante() { sgComprobantes.push({ fecha: '', desc: '', importe: '' }); renderComprobantes(); }
 function renderComprobantes() {
   const wrap = document.getElementById('sg-comprobantes-wrap');
   if (!wrap) return;
-  if (!sgComprobantes.length) { wrap.innerHTML='<p style="color:var(--text2);font-size:13px;margin-bottom:12px">Sin comprobantes aún</p>'; calcGastos(); return; }
-  wrap.innerHTML = sgComprobantes.map((c,i)=>`
+  if (!sgComprobantes.length) { wrap.innerHTML = '<p style="color:var(--text2);font-size:13px;margin-bottom:12px">Sin comprobantes aún</p>'; calcGastos(); return; }
+  wrap.innerHTML = sgComprobantes.map((c, i) => `
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">COMPROBANTE ${i+1}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">COMPROBANTE ${i + 1}</span>
         <button class="btn-sm" style="padding:4px 10px;flex:0" onclick="removeComprobante(${i})">✕</button>
       </div>
       <div class="row-2" style="margin-bottom:8px">
@@ -2936,45 +2945,32 @@ function renderComprobantes() {
     </div>`).join('');
   calcGastos();
 }
-function removeComprobante(i) { sgComprobantes.splice(i,1); renderComprobantes(); }
+function removeComprobante(i) { sgComprobantes.splice(i, 1); renderComprobantes(); }
 function calcGastos() {
-  const total = sgComprobantes.reduce((a,c)=>a+(parseFloat(c.importe)||0),0);
+  const total = sgComprobantes.reduce((a, c) => a + (parseFloat(c.importe) || 0), 0);
   const el = document.getElementById('sg-total');
-  if (el) el.textContent = '$'+fmt(total);
+  if (el) el.textContent = '$' + fmt(total);
 }
 
-// fotos comprobantes
-function handleFotos(event) {
-  const files = Array.from(event.target.files);
-  files.forEach(f => {
-    const reader = new FileReader();
-    reader.onload = e => { sgFotos.push(e.target.result); renderFotos(); };
-    reader.readAsDataURL(f);
-  });
-}
 function renderFotos() {
   const wrap = document.getElementById('sg-fotos-wrap');
   if (!wrap) return;
-  wrap.innerHTML = sgFotos.map((src,i)=>`
+  wrap.innerHTML = sgFotos.map((src, i) => `
     <div style="position:relative;width:80px;height:80px">
       <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
-      <button onclick="sgFotos.splice(${i},1);renderFotos()" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      <button onclick="sgFotos.splice(${i},1);renderFotos()" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
     </div>`).join('');
 }
 
-// talonarios (revtc)
-function addTalonario() {
-  stcTalonarios.push({num:'',desde:'',hasta:''});
-  renderTalonarios();
-}
+function addTalonario() { stcTalonarios.push({ num: '', desde: '', hasta: '' }); renderTalonarios(); }
 function renderTalonarios() {
   const wrap = document.getElementById('stc-talonarios-wrap');
   if (!wrap) return;
-  if (!stcTalonarios.length) { wrap.innerHTML='<p style="color:var(--text2);font-size:13px;margin-bottom:12px">Sin talonarios</p>'; return; }
-  wrap.innerHTML = stcTalonarios.map((t,i)=>`
+  if (!stcTalonarios.length) { wrap.innerHTML = '<p style="color:var(--text2);font-size:13px;margin-bottom:12px">Sin talonarios</p>'; return; }
+  wrap.innerHTML = stcTalonarios.map((t, i) => `
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">TALONARIO ${i+1}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">TALONARIO ${i + 1}</span>
         <button class="btn-sm" style="padding:4px 10px;flex:0" onclick="stcTalonarios.splice(${i},1);renderTalonarios()">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
@@ -2985,105 +2981,99 @@ function renderTalonarios() {
     </div>`).join('');
 }
 
-// ── SAVE SUC FORM ──
+// ══ SAVE SUC FORM ══
 function saveSucForm(type) {
-  const pMap = {cambio:'sc',gastos:'sg',reserva:'sr',cajasuc:'scs',atm:'satm',tarjetas:'st',tesoroatm:'ste',remesaatm:'sra',remesabanco:'srb',depositos:'sd',seguridad:'sseg',revtc:'stc',qiwi:'sq'};
+  const pMap = { cambio:'sc',gastos:'sg',reserva:'sr',cajasuc:'scs',atm:'satm',tarjetas:'st',tesoroatm:'ste',remesaatm:'sra',remesabanco:'srb',depositos:'sd',seguridad:'sseg',revtc:'stc',qiwi:'sq' };
   const p = pMap[type];
   const stand = document.getElementById(`${p}-stand`)?.value.trim();
   if (!stand) { showToast('Completá el Centro/Stand', 'error'); return; }
 
-  const getSig = id => { try { return getSigData(id); } catch(e){ return null; } };
-
   const FOTOS_SAVE = {
-    cambio:[...scFotos], reserva:[...srFotos], cajasuc:[...scsFotos], atm:[...satmFotos],
-    tesoroatm:[...steFotos], remesaatm:[...sraFotos], remesabanco:[...srbFotos],
-    depositos:[...sdFotos], seguridad:[...ssegFotos]
+    cambio: [...scFotos], reserva: [...srFotos], cajasuc: [...scsFotos], atm: [...satmFotos],
+    tesoroatm: [...steFotos], remesaatm: [...sraFotos], remesabanco: [...srbFotos],
+    depositos: [...sdFotos], seguridad: [...ssegFotos]
   };
 
   const base = {
-    id: Date.now().toString(), type: 'suc-'+type, sucType: type,
+    id: Date.now().toString(), type: 'suc-' + type, sucType: type,
     label: SUC_LABELS[type], stand,
-    cajero: document.getElementById(`${p}-cajero`)?.value.trim()||'',
-    fecha: document.getElementById(`${p}-fecha`)?.value||'',
-    hora: document.getElementById(`${p}-hora`)?.value||'',
-    obs: document.getElementById(`${p}-obs`)?.value.trim()||'',
-    auditorNombre: document.getElementById(`${p}-auditor-nombre`)?.value.trim()||'',
-    auditadoNombre: document.getElementById(`${p}-auditado-nombre`)?.value.trim()||'',
-    sigAuditor: getSig(`sig-auditor-suc-${type}`),
-    sigAuditado: getSig(`sig-auditado-suc-${type}`),
+    cajero: document.getElementById(`${p}-cajero`)?.value.trim() || '',
+    fecha: document.getElementById(`${p}-fecha`)?.value || '',
+    hora: document.getElementById(`${p}-hora`)?.value || '',
+    obs: document.getElementById(`${p}-obs`)?.value.trim() || '',
+    auditorNombre: document.getElementById(`${p}-auditor-nombre`)?.value.trim() || '',
+    auditadoNombre: document.getElementById(`${p}-auditado-nombre`)?.value.trim() || '',
+    sigAuditor: getSigDataSmall(`sig-auditor-suc-${type}`),
+    sigAuditado: getSigDataSmall(`sig-auditado-suc-${type}`),
     fotos: FOTOS_SAVE[type] || [],
     createdAt: new Date().toISOString()
   };
 
-  // type-specific data
-  if (type==='cambio') {
+  if (type === 'cambio') {
     base.billetes = getBilletesData('sc', BILLETES_STD);
-    base.monedas = document.getElementById('sc-monedas')?.value||'0';
-    base.deteriorados = document.getElementById('sc-deteriorados')?.value||'0';
-    base.tesoro = document.getElementById('sc-tesoro')?.value||'0';
-    base.inicio = document.getElementById('sc-inicio')?.value||'0';
-    base.gastos2 = document.getElementById('sc-gastos')?.value||'0';
+    base.monedas = document.getElementById('sc-monedas')?.value || '0';
+    base.deteriorados = document.getElementById('sc-deteriorados')?.value || '0';
+    base.tesoro = document.getElementById('sc-tesoro')?.value || '0';
+    base.inicio = document.getElementById('sc-inicio')?.value || '0';
+    base.gastos2 = document.getElementById('sc-gastos')?.value || '0';
   }
-  if (type==='gastos') {
+  if (type === 'gastos') {
     base.comprobantes = [...sgComprobantes];
     base.fotos = [...sgFotos];
-    base.totalComprobantes = sgComprobantes.reduce((a,c)=>a+(parseFloat(c.importe)||0),0);
+    base.totalComprobantes = sgComprobantes.reduce((a, c) => a + (parseFloat(c.importe) || 0), 0);
   }
-  if (type==='reserva') {
-    base.recontado = document.getElementById('sr-recontado')?.value||'0';
-    base.esperado = document.getElementById('sr-esperado')?.value||'0';
-    base.cajero2 = document.getElementById('sr-cajero2')?.value.trim()||'';
-    base.sigAuditado2 = getSig('sig-auditado2-suc-reserva');
-    base.auditado2Nombre = document.getElementById('sr-auditado2-nombre')?.value.trim()||'';
+  if (type === 'reserva') {
+    base.recontado = document.getElementById('sr-recontado')?.value || '0';
+    base.esperado = document.getElementById('sr-esperado')?.value || '0';
+    base.cajero2 = document.getElementById('sr-cajero2')?.value.trim() || '';
+    base.sigAuditado2 = getSigDataSmall('sig-auditado2-suc-reserva');
+    base.auditado2Nombre = document.getElementById('sr-auditado2-nombre')?.value.trim() || '';
   }
-  if (type==='cajasuc') {
+  if (type === 'cajasuc') {
     base.billetes = getBilletesData('scs', BILLETES_STD);
-    base.monedas = document.getElementById('scs-monedas')?.value||'0';
-    base.deteriorados = document.getElementById('scs-deteriorados')?.value||'0';
-    base.cierre = document.getElementById('scs-cierre')?.value||'0';
-    base.retiros = document.getElementById('scs-retiros')?.value||'0';
-    base.puesto = document.getElementById('scs-puesto')?.value||'';
+    base.monedas = document.getElementById('scs-monedas')?.value || '0';
+    base.deteriorados = document.getElementById('scs-deteriorados')?.value || '0';
+    base.cierre = document.getElementById('scs-cierre')?.value || '0';
+    base.retiros = document.getElementById('scs-retiros')?.value || '0';
+    base.puesto = document.getElementById('scs-puesto')?.value || '';
   }
-  if (type==='atm') {
-    base.idAtm = document.getElementById('satm-id')?.value||'';
-    base.remBilletes = getBilletesData('satm-rem',[...BILLETES_ATM,...BILLETES_ATM],true);
-    base.recBilletes = getBilletesData('satm-rec',BILLETES_ATM);
+  if (type === 'atm') {
+    base.idAtm = document.getElementById('satm-id')?.value || '';
+    base.remBilletes = getBilletesData('satm-rem', [...BILLETES_ATM, ...BILLETES_ATM], true);
+    base.recBilletes = getBilletesData('satm-rec', BILLETES_ATM);
   }
-  if (type==='tarjetas') {
-    base.cantidad = document.getElementById('st-cantidad')?.value||'0';
-    base.checks = [1,2,3,4,5,6].map(i=>document.getElementById(`st-check${i}`)?.checked||false);
+  if (type === 'tesoroatm') {
+    base.aptosBilletes = getBilletesData('ste', [20000, 10000, 2000, 1000, 500, 200, 100]);
+    base.noAptos = document.getElementById('ste-noaptos')?.value || '0';
   }
-  if (type==='tesoroatm') {
-    base.aptosBilletes = getBilletesData('ste',[20000,10000,2000,1000,500,200,100]);
-    base.noAptos = document.getElementById('ste-noaptos')?.value||'0';
+  if (type === 'remesaatm') {
+    base.billetes = getBilletesData('sra', [20000, 10000, 2000, 1000, 500, 200, 100]);
+    base.esperado = document.getElementById('sra-esperado')?.value || '0';
+    base.recontado = String(sumBilletes('sra', [20000, 10000, 2000, 1000, 500, 200, 100]));
   }
-  if (type==='remesaatm') {
-    base.billetes = getBilletesData('sra',[20000,10000,2000,1000,500,200,100]);
-    base.esperado = document.getElementById('sra-esperado')?.value||'0';
+  if (type === 'remesabanco') {
+    base.balas = document.getElementById('srb-balas')?.value || '0';
+    base.importe = document.getElementById('srb-importe')?.value || '0';
+    base.lugar = document.getElementById('srb-lugar')?.value.trim() || '';
   }
-  if (type==='remesabanco') {
-    base.balas = document.getElementById('srb-balas')?.value||'0';
-    base.importe = document.getElementById('srb-importe')?.value||'0';
-    base.lugar = document.getElementById('srb-lugar')?.value.trim()||'';
+  if (type === 'depositos') {
+    base.recontado = document.getElementById('sd-recontado')?.value || '0';
+    base.esperado = document.getElementById('sd-esperado')?.value || '0';
   }
-  if (type==='depositos') {
-    base.recontado = document.getElementById('sd-recontado')?.value||'0';
-    base.esperado = document.getElementById('sd-esperado')?.value||'0';
+  if (type === 'seguridad') {
+    base.checks = Array.from({ length: 16 }, (_, i) => document.getElementById(`sseg-c${i + 1}`)?.checked || false);
   }
-  if (type==='seguridad') {
-    base.checks = Array.from({length:16},(_,i)=>document.getElementById(`sseg-c${i+1}`)?.checked||false);
-  }
-  if (type==='revtc') {
-    base.etc = document.getElementById('stc-etc')?.value.trim()||'';
-    base.check1 = document.getElementById('stc-check1')?.checked||false;
-    base.check2 = document.getElementById('stc-check2')?.checked||false;
-    base.desc = document.getElementById('stc-desc')?.value.trim()||'';
+  if (type === 'revtc') {
+    base.etc = document.getElementById('stc-etc')?.value.trim() || '';
+    base.check1 = document.getElementById('stc-check1')?.checked || false;
+    base.check2 = document.getElementById('stc-check2')?.checked || false;
+    base.desc = document.getElementById('stc-desc')?.value.trim() || '';
     base.talonarios = [...stcTalonarios];
   }
-  if (type==='qiwi') {
-    base.recontado = document.getElementById('sq-recontado')?.value||'0';
-    base.esperado = document.getElementById('sq-esperado')?.value||'0';
-    base.billetes = getBilletesData('sq-bill',BILLETES_QIWI);
+  if (type === 'qiwi') {
+    base.recontado = document.getElementById('sq-recontado')?.value || '0';
+    base.esperado = document.getElementById('sq-esperado')?.value || '0';
+    base.billetes = getBilletesData('sq-bill', BILLETES_QIWI);
   }
 
   const records = getRecords();
@@ -3091,254 +3081,161 @@ function saveSucForm(type) {
   saveRecords(records);
   showToast('✓ Guardado correctamente', 'success');
   setTimeout(() => {
-    showScreen('sucursales'); renderHistorySuc();
+    showScreen('sucursales');
+    renderHistorySuc();
     generateSucPDF(base);
   }, 600);
 }
 
-// ── HISTORY SUCURSALES ──
-// ══ QUICK DELETE ══
-function quickDelete(id, from) {
-  if (!confirm('¿Eliminar este registro?')) return;
-  const records = getRecords().filter(r => r.id !== id);
-  saveRecords(records);
-  showToast('Registro eliminado', 'info');
-  if (from === 'home') renderHistory();
-  else if (from === 'agentes') renderHistoryAgentes();
-  else if (from === 'sucursales') renderHistorySuc();
-}
-
-function renderHistorySuc() {
-  const list = document.getElementById('history-list-sucursales');
-  const records = getRecords().filter(r => r.type && r.type.startsWith('suc-'));
-  if (!records.length) { list.innerHTML='<div class="empty-state"><div class="es-icon">📂</div><p>No hay registros aún.</p></div>'; return; }
-  list.innerHTML = records.slice(0,20).map(r=>{
-    try {
-    const dateStr = r.fecha ? r.fecha.split('-').reverse().join('/') : '—';
-    return `<div class="history-item" style="cursor:default">
-      <div class="hi-left" onclick="openDetail('${r.id}')" style="cursor:pointer;flex:1">
-        <h4>${SUC_ICONS[r.sucType]||'📋'} ${r.label||'Sucursal'} · ${r.stand||'—'}</h4>
-        <p>${dateStr} ${r.hora||''} · ${r.cajero||''}</p>
-      </div>
-      <span class="badge badge-ok" onclick="openDetail('${r.id}')" style="cursor:pointer">OK</span>
-      <button onclick="quickDelete('${r.id}','sucursales')" style="margin-left:10px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
-    </div>`;
-    } catch(e) {
-      return `<div class="history-item" style="cursor:default">
-        <div class="hi-left" style="flex:1"><h4>📋 Registro</h4><p>Datos incompletos</p></div>
-        <button onclick="quickDelete('${r.id}','sucursales')" style="background:transparent;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px">🗑️</button>
-      </div>`;
-    }
-  }).join('');
-}
-
-// ── PDF SUCURSALES ──
+// ══ PDF SUCURSALES ══
 function generateSucPDF(r) {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-  const W=210, m=20;
-  let y=20;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, m = 20;
+  let y = pdfHeader(doc, W, m, r.label || 'PLANILLA');
 
-  // header
-  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('gire', m, y);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150);
-  doc.text('Soluciones de Pago', m+12, y); doc.setTextColor(0);
-  y+=8;
-  doc.setFillColor(240,240,240); doc.rect(m, y, W-2*m, 8, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10);
-  doc.text(r.label.toUpperCase(), W/2, y+5.5, {align:'center'});
-  y+=14;
-
-  // common fields
-  const fs = [{l:'CENTRO / STAND:', v:r.stand},{l:'CAJERO PRINCIPAL:', v:r.cajero},{l:'FECHA:', v:r.fecha?r.fecha.split('-').reverse().join('/'):'—'},{l:'HORA:', v:r.hora}];
-  if (r.cajero2) fs.splice(2,0,{l:'CAJERO QUE ABRE SUCURSAL:', v:r.cajero2});
-  if (r.idAtm) fs.push({l:'ID ATM:', v:r.idAtm});
-  if (r.etc) fs.push({l:'EMPRESA TRANSPORTADORA:', v:r.etc});
+  const fs = [
+    { l: 'CENTRO / STAND:', v: r.stand },
+    { l: 'CAJERO PRINCIPAL:', v: r.cajero },
+    { l: 'FECHA:', v: r.fecha ? r.fecha.split('-').reverse().join('/') : '—' },
+    { l: 'HORA:', v: r.hora }
+  ];
+  if (r.cajero2) fs.splice(2, 0, { l: 'CAJERO QUE ABRE SUCURSAL:', v: r.cajero2 });
+  if (r.idAtm) fs.push({ l: 'ID ATM:', v: r.idAtm });
   doc.setFontSize(10);
-  fs.forEach(({l,v})=>{
-    doc.setFont('helvetica','bold'); doc.text(l, m, y);
-    doc.setFont('helvetica','normal'); doc.text(v||'', m+55, y); y+=7;
-  });
-  y+=4;
+  fs.forEach(({ l, v }) => { doc.setFont('helvetica', 'bold'); doc.text(l, m, y); doc.setFont('helvetica', 'normal'); doc.text(v || '', m + 55, y); y += 7; });
+  y += 4;
 
-  // billetes table helper
-  function billetesTable(data) {
-    doc.setFillColor(235,235,235); doc.rect(m, y-5, W-2*m, 8, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text('DENOMINACIÓN', m+3, y); doc.text('CANTIDAD', W/2-10, y); doc.text('IMPORTE $', W-m-3, y, {align:'right'});
-    y+=8;
-    data.forEach(({label,qty,imp})=>{
-      if (qty===0) return;
-      doc.setFont('helvetica','normal'); doc.setFontSize(9);
-      doc.setDrawColor(220); doc.rect(m, y-5, W-2*m, 7);
-      doc.text(label, m+3, y); doc.text(String(qty), W/2-10, y); doc.text('$'+fmt(imp), W-m-3, y, {align:'right'});
-      y+=7;
-    });
-    y+=4;
+  function billetesTable(data, title) {
+    if (title) { doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(title, m, y); y += 8; }
+    doc.setFillColor(235, 235, 235); doc.rect(m, y - 5, W - 2 * m, 8, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.text('DENOMINACIÓN', m + 3, y); doc.text('CANTIDAD', W / 2 - 10, y); doc.text('IMPORTE $', W - m - 3, y, { align: 'right' }); y += 8;
+    data.forEach(({ label, qty, imp }) => {
+      if (qty === 0) return;
+      doc.setFont('helvetica', 'normal'); doc.setDrawColor(220); doc.rect(m, y - 5, W - 2 * m, 7);
+      doc.text(label, m + 3, y); doc.text(String(qty), W / 2 - 10, y); doc.text('$' + fmt(imp), W - m - 3, y, { align: 'right' }); y += 7;
+    }); y += 4;
   }
 
-  // totals row
-  function totalRow(label, val, cls='') {
-    doc.setFont('helvetica','bold'); doc.setFontSize(10);
-    doc.setDrawColor(200); doc.rect(m, y-5, W-2*m, 8);
-    doc.text(label, m+3, y);
-    if (cls==='pos') doc.setTextColor(0,150,100);
-    else if (cls==='neg') doc.setTextColor(200,0,50);
-    doc.text(val, W-m-3, y, {align:'right'});
-    doc.setTextColor(0); y+=8;
+  function totalRow(label, val, cls) {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.setDrawColor(200); doc.rect(m, y - 5, W - 2 * m, 8);
+    doc.text(label, m + 3, y);
+    if (cls === 'pos') doc.setTextColor(0, 150, 100);
+    else if (cls === 'neg') doc.setTextColor(200, 0, 50);
+    doc.text(String(val), W - m - 3, y, { align: 'right' });
+    doc.setTextColor(0); y += 8;
   }
 
-  // type-specific content
-  if (r.billetes) { billetesTable(r.billetes); }
-  if (r.remBilletes) { doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('REMANENTE Y PURGADOS', m, y); y+=6; billetesTable(r.remBilletes); }
-  if (r.recBilletes) { doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('RECARGA', m, y); y+=6; billetesTable(r.recBilletes); }
-  if (r.aptosBilletes) { doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('APTOS ATM', m, y); y+=6; billetesTable(r.aptosBilletes); }
+  if (r.billetes) billetesTable(r.billetes, null);
+  if (r.remBilletes) billetesTable(r.remBilletes, 'REMANENTE Y PURGADOS');
+  if (r.recBilletes) billetesTable(r.recBilletes, 'RECARGA');
+  if (r.aptosBilletes) billetesTable(r.aptosBilletes, 'APTOS ATM');
 
-  // totals
-  if (r.type==='suc-cambio') {
-    const bil=r.billetes.reduce((a,b)=>a+b.imp,0);
-    const sub=bil+(parseFloat(r.monedas)||0)+(parseFloat(r.deteriorados)||0);
-    totalRow('SUBTOTAL RECONTADO', '$'+fmt(sub));
-    totalRow('POSICION DEL TESORO', '$'+fmt(parseFloat(r.tesoro)||0));
-    totalRow('INICIO DE CAJA', '$'+fmt(parseFloat(r.inicio)||0));
-    totalRow('GASTOS', '$'+fmt(parseFloat(r.gastos2)||0));
-    const dif=sub-(parseFloat(r.tesoro)||0)-(parseFloat(r.inicio)||0)-(parseFloat(r.gastos2)||0);
-    totalRow('DIFERENCIA', (dif>=0?'+':'')+'$'+fmt(dif), dif>0?'pos':dif<0?'neg':'');
+  if (r.type === 'suc-cambio') {
+    const bil = r.billetes.reduce((a, b) => a + b.imp, 0);
+    const sub = bil + (parseFloat(r.monedas) || 0) + (parseFloat(r.deteriorados) || 0);
+    totalRow('SUBTOTAL RECONTADO', '$' + fmt(sub));
+    totalRow('POSICION DEL TESORO', '$' + fmt(parseFloat(r.tesoro) || 0));
+    totalRow('INICIO DE CAJA', '$' + fmt(parseFloat(r.inicio) || 0));
+    totalRow('GASTOS', '$' + fmt(parseFloat(r.gastos2) || 0));
+    const dif = sub - (parseFloat(r.tesoro) || 0) - (parseFloat(r.inicio) || 0) - (parseFloat(r.gastos2) || 0);
+    totalRow('DIFERENCIA', (dif >= 0 ? '+' : '') + '$' + fmt(dif), dif > 0 ? 'pos' : dif < 0 ? 'neg' : '');
   }
-  if (r.type==='suc-cajasuc') {
-    const bil=r.billetes.reduce((a,b)=>a+b.imp,0);
-    const tot=bil+(parseFloat(r.monedas)||0)+(parseFloat(r.deteriorados)||0);
-    totalRow('TOTAL RECONTADO', '$'+fmt(tot));
-    totalRow('CIERRE DE CAJA', '$'+fmt(parseFloat(r.cierre)||0));
-    const dif=tot-(parseFloat(r.cierre)||0);
-    totalRow('DIFERENCIA', (dif>=0?'+':'')+'$'+fmt(dif), dif>0?'pos':dif<0?'neg':'');
-    if (r.retiros) totalRow('RETIROS NO ENTREGADOS', '$'+fmt(parseFloat(r.retiros)||0));
+  if (r.type === 'suc-cajasuc') {
+    const bil = r.billetes.reduce((a, b) => a + b.imp, 0);
+    const tot = bil + (parseFloat(r.monedas) || 0) + (parseFloat(r.deteriorados) || 0);
+    totalRow('TOTAL RECONTADO', '$' + fmt(tot));
+    totalRow('CIERRE DE CAJA', '$' + fmt(parseFloat(r.cierre) || 0));
+    const dif = tot - (parseFloat(r.cierre) || 0);
+    totalRow('DIFERENCIA', (dif >= 0 ? '+' : '') + '$' + fmt(dif), dif > 0 ? 'pos' : dif < 0 ? 'neg' : '');
+    if (r.retiros) totalRow('RETIROS NO ENTREGADOS', '$' + fmt(parseFloat(r.retiros) || 0));
   }
-  if (['suc-reserva','suc-depositos','suc-remesaatm'].includes(r.type)) {
-    totalRow('TOTAL RECONTADO', '$'+fmt(parseFloat(r.recontado)||0));
-    totalRow('TOTAL ESPERADO', '$'+fmt(parseFloat(r.esperado)||0));
-    const dif=(parseFloat(r.recontado)||0)-(parseFloat(r.esperado)||0);
-    totalRow('DIFERENCIA', (dif>=0?'+':'')+'$'+fmt(dif), dif>0?'pos':dif<0?'neg':'');
+  if (['suc-reserva', 'suc-depositos', 'suc-remesaatm'].includes(r.type)) {
+    totalRow('TOTAL RECONTADO', '$' + fmt(parseFloat(r.recontado) || 0));
+    totalRow('TOTAL ESPERADO', '$' + fmt(parseFloat(r.esperado) || 0));
+    const dif = (parseFloat(r.recontado) || 0) - (parseFloat(r.esperado) || 0);
+    totalRow('DIFERENCIA', (dif >= 0 ? '+' : '') + '$' + fmt(dif), dif > 0 ? 'pos' : dif < 0 ? 'neg' : '');
   }
-  if (r.type==='suc-atm') {
-    const rem=r.remBilletes.reduce((a,b)=>a+b.imp,0);
-    totalRow('TOTAL REMANENTE', '$'+fmt(rem));
-    const rec=r.recBilletes.reduce((a,b)=>a+b.imp,0);
-    totalRow('TOTAL RECARGA', '$'+fmt(rec));
+  if (r.type === 'suc-atm') {
+    const rem = r.remBilletes.reduce((a, b) => a + b.imp, 0);
+    totalRow('TOTAL REMANENTE', '$' + fmt(rem));
+    const rec = r.recBilletes.reduce((a, b) => a + b.imp, 0);
+    totalRow('TOTAL RECARGA', '$' + fmt(rec));
   }
-  if (r.type==='suc-tesoroatm') {
-    const apt=r.aptosBilletes.reduce((a,b)=>a+b.imp,0);
-    totalRow('TOTAL APTOS ATM', '$'+fmt(apt));
-    totalRow('TOTAL NO APTOS ATM', '$'+fmt(parseFloat(r.noAptos)||0));
+  if (r.type === 'suc-tesoroatm') {
+    const apt = r.aptosBilletes.reduce((a, b) => a + b.imp, 0);
+    totalRow('TOTAL APTOS ATM', '$' + fmt(apt));
+    totalRow('TOTAL NO APTOS ATM', '$' + fmt(parseFloat(r.noAptos) || 0));
   }
-  if (r.type==='suc-remesabanco') {
+  if (r.type === 'suc-remesabanco') {
     totalRow('CANTIDAD DE BALAS', r.balas);
-    totalRow('IMPORTE PRESUMIBLE TOTAL', '$'+fmt(parseFloat(r.importe)||0));
-    if (r.lugar) { doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text('Lugar de resguardo: '+r.lugar, m, y); y+=8; }
+    totalRow('IMPORTE PRESUMIBLE TOTAL', '$' + fmt(parseFloat(r.importe) || 0));
+    if (r.lugar) { doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('Lugar de resguardo: ' + r.lugar, m, y); y += 8; }
   }
-  if (r.type==='suc-tarjetas') {
-    totalRow('CANTIDAD DE TARJETAS', r.cantidad);
-    const CLABELS=['Sucursal propia / stand','Sucursal compartida BSR','Se labró el acta','Se adjunta copia del acta','Se envió por correo al banco','Se entregó al personal BSR'];
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.text('CHECKS:', m, y); y+=7;
-    r.checks.forEach((c,i)=>{ doc.setFont('helvetica','normal'); doc.text((c?'☑ ':'☐ ')+CLABELS[i], m+4, y); y+=6; });
-    y+=4;
-  }
-  if (r.type==='suc-seguridad') {
-    const SLABELS=['Puertas y ventanas en buen estado','Control de llaves','Accesos de emergencia señalizados','Puerta de acceso a cajas trabada','Caja auxiliar con retardo','Separación de funciones','Fondo fijo documentado','Caja sin dinero visible','Funciones definidas','Reemplazos documentados','Sanciones ante desvíos','Uso de uniforme','Cámaras funcionando','Alarmas activas','Botón antipánico operativo','Números de emergencia visibles'];
-    const SGROUPS=['1. ACCESOS','2. CAJA Y VALORES','3. PERSONAL','4. INSTALACIONES'];
-    [0,4,8,12].forEach((start,gi)=>{ doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(SGROUPS[gi], m, y); y+=6; r.checks.slice(start,start+4).forEach((c,i)=>{ doc.setFont('helvetica','normal'); doc.text((c?'☑ ':'☐ ')+SLABELS[start+i], m+4, y); y+=5.5; }); y+=3; });
-  }
-  if (r.type==='suc-gastos') {
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('COMPROBANTES PENDIENTES DE RENDICIÓN', m, y); y+=8;
-    doc.setFillColor(235,235,235); doc.rect(m, y-5, W-2*m, 8, 'F');
-    doc.setFontSize(9); doc.text('FECHA', m+3, y); doc.text('DESCRIPCIÓN', m+22, y); doc.text('IMPORTE', W-m-3, y, {align:'right'}); y+=8;
-    r.comprobantes.forEach(c=>{ doc.setFont('helvetica','normal'); doc.setDrawColor(220); doc.rect(m,y-5,W-2*m,7); doc.text(c.fecha||'', m+3, y); doc.text((c.desc||'').substring(0,40), m+22, y); doc.text('$'+fmt(parseFloat(c.importe)||0), W-m-3, y, {align:'right'}); y+=7; });
-    totalRow('RESUMEN TOTAL', '$'+fmt(r.totalComprobantes||0));
-  }
-  if (r.type==='suc-revtc') {
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('PROCEDIMIENTO DE RECAUDACIÓN', m, y); y+=8;
-    doc.setFont('helvetica','normal'); doc.text((r.check1?'☑ ':'☐ ')+'Lectura de credencial', m, y); y+=6;
-    doc.text((r.check2?'☑ ':'☐ ')+'Listado portavalores', m, y); y+=8;
-    if (r.desc) { doc.setFont('helvetica','bold'); doc.text('Descripción:', m, y); y+=6; doc.setFont('helvetica','normal'); const lines=doc.splitTextToSize(r.desc, W-2*m); doc.text(lines, m, y); y+=lines.length*5+4; }
-    if (r.talonarios.length) {
-      doc.setFont('helvetica','bold'); doc.text('TALONARIOS:', m, y); y+=7;
-      doc.setFillColor(235,235,235); doc.rect(m, y-5, W-2*m, 8, 'F');
-      doc.setFontSize(9); doc.text('K/TALONARIO', m+3, y); doc.text('DESDE', W/2-20, y); doc.text('HASTA', W-m-3, y, {align:'right'}); y+=8;
-      r.talonarios.forEach(t=>{ doc.setFont('helvetica','normal'); doc.setDrawColor(220); doc.rect(m,y-5,W-2*m,7); doc.text(t.num||'', m+3, y); doc.text(t.desde||'', W/2-20, y); doc.text(t.hasta||'', W-m-3, y, {align:'right'}); y+=7; });
-    }
-  }
-  if (r.type==='suc-qiwi') {
-    totalRow('TOTAL RECONTADO', '$'+fmt(parseFloat(r.recontado)||0));
-    totalRow('TOTAL ESPERADO', '$'+fmt(parseFloat(r.esperado)||0));
-    const dif=(parseFloat(r.recontado)||0)-(parseFloat(r.esperado)||0);
-    totalRow('DIFERENCIA', (dif>=0?'+':'')+'$'+fmt(dif), dif>0?'pos':dif<0?'neg':'');
-    if (dif!==0) { y+=4; doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('DETALLE DE BILLETES (diferencias)', m, y); y+=8; billetesTable(r.billetes); }
-  }
-
-  // obs
-  if (r.obs) { y+=4; doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('Observaciones:', m, y); y+=6; doc.setFont('helvetica','normal'); const lines=doc.splitTextToSize(r.obs, W-2*m); doc.text(lines,m,y); y+=lines.length*5+6; }
-
-  // fotos comprobantes (gastos)
-  if (r.type==='suc-gastos' && r.fotos && r.fotos.length) {
-    if (y>220) { doc.addPage(); y=20; }
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS DE COMPROBANTES', m, y); y+=8;
-    r.fotos.forEach((src,i)=>{
-      try {
-        if (y+60>280) { doc.addPage(); y=20; }
-        doc.addImage(src,'JPEG',m,y,80,60); y+=66;
-      } catch(e){}
+  if (r.type === 'suc-seguridad') {
+    const SLABELS = ['Puertas y ventanas en buen estado','Control de llaves','Accesos de emergencia señalizados','Puerta de acceso a cajas trabada','Caja auxiliar con retardo','Separación de funciones','Fondo fijo documentado','Caja sin dinero visible','Funciones definidas','Reemplazos documentados','Sanciones ante desvíos','Uso de uniforme','Cámaras funcionando','Alarmas activas','Botón antipánico operativo','Números de emergencia visibles'];
+    const SGROUPS = ['1. ACCESOS', '2. CAJA Y VALORES', '3. PERSONAL', '4. INSTALACIONES'];
+    [0, 4, 8, 12].forEach((start, gi) => {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.text(SGROUPS[gi], m, y); y += 6;
+      (r.checks || []).slice(start, start + 4).forEach((c, i) => { doc.setFont('helvetica', 'normal'); doc.text((c ? '☑ ' : '☐ ') + SLABELS[start + i], m + 4, y); y += 5.5; }); y += 3;
     });
   }
+  if (r.type === 'suc-gastos') {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('COMPROBANTES PENDIENTES DE RENDICIÓN', m, y); y += 8;
+    doc.setFillColor(235, 235, 235); doc.rect(m, y - 5, W - 2 * m, 8, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.text('FECHA', m + 3, y); doc.text('DESCRIPCIÓN', m + 22, y); doc.text('IMPORTE', W - m - 3, y, { align: 'right' }); y += 8;
+    (r.comprobantes || []).forEach(c => {
+      doc.setFont('helvetica', 'normal'); doc.setDrawColor(220); doc.rect(m, y - 5, W - 2 * m, 7);
+      doc.text(c.fecha || '', m + 3, y); doc.text((c.desc || '').substring(0, 40), m + 22, y); doc.text('$' + fmt(parseFloat(c.importe) || 0), W - m - 3, y, { align: 'right' }); y += 7;
+    });
+    totalRow('RESUMEN TOTAL', '$' + fmt(r.totalComprobantes || 0));
+  }
 
-  // legal text
-  if (y>250) { doc.addPage(); y=20; }
-  y+=4;
-  doc.setFontSize(8); doc.setTextColor(120);
-  const legalType = r.type==='suc-tarjetas' ? 'tarjetas' : r.type==='suc-revtc' ? 'formularios' : 'valores';
-  doc.text(`Los ${legalType} indicados precedentemente fueron arqueados en mi presencia`, m, y); y+=5;
-  doc.text('y me fueron devueltos intactos una vez finalizada la tarea aludida.', m, y); y+=10;
-  doc.setTextColor(0);
+  if (r.obs) { y += 4; doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('Observaciones:', m, y); y += 6; doc.setFont('helvetica', 'normal'); const lines = doc.splitTextToSize(r.obs, W - 2 * m); doc.text(lines, m, y); y += lines.length * 5 + 6; }
 
-  // sigs
-  const sigW=75, sigH=25;
-  const col1=m, col2=W-m-sigW;
-  doc.setDrawColor(180); doc.line(col1, y+sigH, col1+sigW, y+sigH); doc.line(col2, y+sigH, col2+sigW, y+sigH);
-  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor,'JPEG',col1,y,sigW,sigH); } catch(e){} }
-  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado,'JPEG',col2,y,sigW,sigH); } catch(e){} }
-  y+=sigH+3;
-  doc.setFontSize(8);
-  doc.text('Firma, DNI y aclaración del auditor', col1, y);
-  doc.text('Firma, DNI y aclaración del auditado', col2, y); y+=5;
-  if (r.auditorNombre) doc.text(r.auditorNombre, col1, y);
-  if (r.auditadoNombre) doc.text(r.auditadoNombre, col2, y); y+=8;
+  // fotos comprobantes
+  if (r.type === 'suc-gastos' && r.fotos && r.fotos.length) {
+    if (y > 220) { doc.addPage(); y = 20; }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('FOTOS DE COMPROBANTES', m, y); y += 8;
+    r.fotos.forEach(src => { try { if (y + 60 > 280) { doc.addPage(); y = 20; } doc.addImage(src, 'JPEG', m, y, 80, 60); y += 66; } catch(e) {} });
+  }
 
-  // second auditado sig (reserva)
+  if (y > 250) { doc.addPage(); y = 20; }
+  y = pdfSigs(doc, r, y, W, m);
+
+  // segunda firma (reserva)
   if (r.sigAuditado2) {
-    try { doc.addImage(r.sigAuditado2,'JPEG',col2,y,sigW,sigH); } catch(e){}
-    doc.setDrawColor(180); doc.line(col2, y+sigH, col2+sigW, y+sigH);
-    y+=sigH+3; doc.setFontSize(8); doc.text('Firma, DNI y aclaración del auditado', col2, y); y+=5;
+    y += 8;
+    const sigW = 75, sigH = 25, col2 = W - m - sigW;
+    try { doc.addImage(r.sigAuditado2, 'JPEG', col2, y, sigW, sigH); } catch(e) {}
+    doc.setDrawColor(180); doc.line(col2, y + sigH, col2 + sigW, y + sigH);
+    y += sigH + 3; doc.setFontSize(8);
+    doc.text('Firma, DNI y aclaración del auditado 2', col2, y); y += 5;
     if (r.auditado2Nombre) doc.text(r.auditado2Nombre, col2, y);
   }
 
-  // fotos
-  if (r.fotos && r.fotos.length) {
-    doc.addPage(); let yf=20;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('FOTOS', m, yf); yf+=10;
-    r.fotos.forEach(src => {
-      try { if(yf+70>280){doc.addPage();yf=20;} doc.addImage(src,'JPEG',m,yf,80,65); yf+=72; } catch(e){}
-    });
-  }
-
-  doc.save(`${r.label.replace(/ /g,'_')}_${r.stand}_${r.fecha||'fecha'}.pdf`);
+  pdfFotos(doc, r.type !== 'suc-gastos' ? r.fotos : [], m);
+  doc.save(`${(r.label || 'Planilla').replace(/ /g, '_')}_${r.stand}_${r.fecha || 'fecha'}.pdf`);
   showToast('✓ PDF generado', 'success');
 }
 
+// ══ TOAST ══
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
 
+// ══ PWA INSTALL ══
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
   const wrap = document.getElementById('install-banner-wrap');
-  wrap.innerHTML = `<div class="install-banner">
+  if (wrap) wrap.innerHTML = `<div class="install-banner">
     <p><strong>Instalá la app</strong> en tu celular para usarla sin internet</p>
     <button class="btn-install" onclick="installApp()">INSTALAR</button>
   </div>`;
@@ -3348,7 +3245,8 @@ function installApp() {
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(() => {
     deferredPrompt = null;
-    document.getElementById('install-banner-wrap').innerHTML = '';
+    const wrap = document.getElementById('install-banner-wrap');
+    if (wrap) wrap.innerHTML = '';
   });
 }
 
