@@ -2527,17 +2527,17 @@ function pdfSigs(doc, r, y, W, m) {
   y += 10; doc.setTextColor(0);
   const sigW = 75, sigH = 25, col1 = m, col2 = W - m - sigW;
   doc.setDrawColor(180);
-  doc.line(col1, y + sigH, col1 + sigW, y + sigH);
   doc.line(col2, y + sigH, col2 + sigW, y + sigH);
-  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor, 'JPEG', col1, y, sigW, sigH); } catch(e) {} }
-  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado, 'JPEG', col2, y, sigW, sigH); } catch(e) {} }
+  doc.line(col1, y + sigH, col1 + sigW, y + sigH);
+  if (r.sigAuditado) { try { doc.addImage(r.sigAuditado, 'JPEG', col1, y, sigW, sigH); } catch(e) {} }
+  if (r.sigAuditor) { try { doc.addImage(r.sigAuditor, 'JPEG', col2, y, sigW, sigH); } catch(e) {} }
   y += sigH + 3;
   doc.setFontSize(8);
-  doc.text('Firma, DNI y aclaración del auditor', col1, y);
-  doc.text('Firma, DNI y aclaración del auditado', col2, y);
+  doc.text('Firma, DNI y aclaración del auditado', col1, y);
+  doc.text('Firma, DNI y aclaración del auditor', col2, y);
   y += 5;
-  if (r.auditorNombre) doc.text(r.auditorNombre, col1, y);
-  if (r.auditadoNombre) doc.text(r.auditadoNombre, col2, y);
+  if (r.auditadoNombre) doc.text(r.auditadoNombre, col1, y);
+  if (r.auditorNombre) doc.text(r.auditorNombre, col2, y);
   return y;
 }
 
