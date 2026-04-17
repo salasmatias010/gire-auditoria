@@ -1036,13 +1036,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="detail-section-title">BILLETES</div>
     <div id="sc-billetes-wrap"></div>
-    <div class="form-group"><label>Monedas ($)</label><input type="text" id="sc-monedas" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></div>
-    <div class="form-group"><label>Deteriorados ($)</label><input type="text" id="sc-deteriorados" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></div>
+    <div class="form-group"><label>Monedas ($)</label><input type="tel" id="sc-monedas" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></div>
+    <div class="form-group"><label>Deteriorados ($)</label><input type="tel" id="sc-deteriorados" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></div>
     <div class="totals-box">
       <div class="trow"><span class="tlabel">SUBTOTAL RECONTADO</span><span class="tval" id="sc-subtotal">$0,00</span></div>
-      <div class="trow"><span class="tlabel">POSICION DEL TESORO</span><span class="tval"><input type="text" id="sc-tesoro" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
-      <div class="trow"><span class="tlabel">INICIO DE CAJA</span><span class="tval"><input type="text" id="sc-inicio" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
-      <div class="trow"><span class="tlabel">GASTOS</span><span class="tval"><input type="text" id="sc-gastos" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
+      <div class="trow"><span class="tlabel">POSICION DEL TESORO</span><span class="tval"><input type="tel" id="sc-tesoro" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
+      <div class="trow"><span class="tlabel">INICIO DE CAJA</span><span class="tval"><input type="tel" id="sc-inicio" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
+      <div class="trow"><span class="tlabel">GASTOS</span><span class="tval"><input type="tel" id="sc-gastos" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sc-dif">—</span></div>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sc-obs" placeholder="Observaciones..."></textarea></div>
@@ -1134,8 +1134,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <div class="form-group"><label>Hora</label><input type="time" id="sr-hora"></div>
     </div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="text" id="sr-recontado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcReserva()"></span></div>
-      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="text" id="sr-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcReserva()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="tel" id="sr-recontado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcReserva()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="tel" id="sr-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcReserva()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sr-dif">—</span></div>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sr-obs" placeholder="Observaciones..."></textarea></div>
@@ -1186,13 +1186,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="detail-section-title">BILLETES</div>
     <div id="scs-billetes-wrap"></div>
-    <div class="form-group"><label>Monedas ($)</label><input type="text" id="scs-monedas" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></div>
-    <div class="form-group"><label>Deteriorados ($)</label><input type="text" id="scs-deteriorados" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></div>
+    <div class="form-group"><label>Monedas ($)</label><input type="tel" id="scs-monedas" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></div>
+    <div class="form-group"><label>Deteriorados ($)</label><input type="tel" id="scs-deteriorados" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></div>
     <div class="totals-box">
       <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval" id="scs-recontado-display">$0,00</span></div>
-      <div class="trow"><span class="tlabel">CIERRE DE CAJA</span><span class="tval"><input type="text" id="scs-cierre" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></span></div>
+      <div class="trow"><span class="tlabel">CIERRE DE CAJA</span><span class="tval"><input type="tel" id="scs-cierre" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="scs-dif">—</span></div>
-      <div class="trow"><span class="tlabel">RETIROS NO ENTREGADOS</span><span class="tval"><input type="text" id="scs-retiros" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
+      <div class="trow"><span class="tlabel">RETIROS NO ENTREGADOS</span><span class="tval"><input type="tel" id="scs-retiros" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="scs-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
@@ -1387,7 +1387,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="detail-section-title">NO APTOS ATM</div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">TOTAL NO APTOS</span><span class="tval"><input type="text" id="ste-noaptos" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL NO APTOS</span><span class="tval"><input type="tel" id="ste-noaptos" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="ste-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
@@ -1432,7 +1432,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     <div id="sra-billetes-wrap"></div>
     <div class="totals-box">
       <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval" id="sra-recontado-display">$0,00</span></div>
-      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="text" id="sra-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcRemesaATM()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="tel" id="sra-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcRemesaATM()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sra-dif">—</span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="sra-obs" placeholder="Observaciones..."></textarea></div>
@@ -1475,8 +1475,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <div class="form-group"><label>Hora</label><input type="time" id="srb-hora"></div>
     </div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">CANTIDAD DE BALAS</span><span class="tval"><input type="text" id="srb-balas" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
-      <div class="trow"><span class="tlabel">IMPORTE PRESUMIBLE TOTAL</span><span class="tval"><input type="text" id="srb-importe" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
+      <div class="trow"><span class="tlabel">CANTIDAD DE BALAS</span><span class="tval"><input type="tel" id="srb-balas" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
+      <div class="trow"><span class="tlabel">IMPORTE PRESUMIBLE TOTAL</span><span class="tval"><input type="tel" id="srb-importe" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Lugar de Resguardo de los Valores</label><input type="text" id="srb-lugar" placeholder="Descripción del lugar"></div>
     <div class="form-group"><label>Observaciones</label><textarea id="srb-obs" placeholder="Observaciones..."></textarea></div>
@@ -1519,8 +1519,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <div class="form-group"><label>Hora</label><input type="time" id="sd-hora"></div>
     </div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="text" id="sd-recontado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcDepositos()"></span></div>
-      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="text" id="sd-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcDepositos()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="tel" id="sd-recontado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcDepositos()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="tel" id="sd-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcDepositos()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sd-dif">—</span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="sd-obs" placeholder="Observaciones..."></textarea></div>
@@ -1647,11 +1647,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     <div class="form-group">
       <label>Total Recontado ($)</label>
-      <input type="text" id="a-recontado" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this);calcDif()">
+      <input type="tel" id="a-recontado" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this);calcDif()">
     </div>
     <div class="form-group">
       <label>Cierre de Caja ($)</label>
-      <input type="text" id="a-cierre" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this);calcDif()">
+      <input type="tel" id="a-cierre" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this);calcDif()">
     </div>
 
     <div class="totals-box">
@@ -1740,7 +1740,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="form-group">
       <label>Total Entregado ($)</label>
-      <input type="text" id="e-total" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this)">
+      <input type="tel" id="e-total" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this)">
     </div>
     <div class="form-group">
       <label>Observaciones</label>
@@ -2072,52 +2072,39 @@ function fmt(n) { return n.toLocaleString('es-AR', { minimumFractionDigits: 2 })
 
 // ══ SEPARADOR DE MILES ══
 function parseMoney(val) {
-  // Formato: 1.234.567,89 -> 1234567.89
   const s = String(val).trim();
-  const hasComma = s.includes(',');
-  if (hasComma) {
-    // Separador decimal = coma, miles = punto
+  // Soporta: 1.234.567,89 | 1234567,89 | 1234567.89 | 1.234.567
+  if (s.includes(',')) {
     return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
-  } else {
-    // Solo entero con puntos de miles
-    return parseFloat(s.replace(/\./g, '')) || 0;
   }
+  return parseFloat(s.replace(/\./g, '')) || 0;
 }
+
 function onMoneyInput(el) {
-  const val = el.value;
-  const cursorPos = el.selectionStart;
-  const lengthBefore = val.length;
+  const raw = el.value;
 
-  // Separar parte entera y decimal
-  // El usuario escribe con coma como separador decimal
-  const commaIdx = val.lastIndexOf(',');
+  // Detectar si hay coma (separador decimal)
+  const commaIdx = raw.lastIndexOf(',');
+  let intRaw, decPart;
 
-  let intPart, decPart;
   if (commaIdx !== -1) {
-    intPart = val.substring(0, commaIdx).replace(/[^0-9]/g, '');
-    decPart = val.substring(commaIdx + 1).replace(/[^0-9]/g, '').substring(0, 2);
+    intRaw = raw.substring(0, commaIdx).replace(/[^0-9]/g, '');
+    decPart = raw.substring(commaIdx + 1).replace(/[^0-9]/g, '').substring(0, 2);
   } else {
-    intPart = val.replace(/[^0-9]/g, '');
+    intRaw = raw.replace(/[^0-9]/g, '');
     decPart = null;
   }
 
-  if (intPart === '' && decPart === null) { el.value = ''; return; }
-  if (intPart === '' && decPart !== null) { el.value = '0,' + decPart; return; }
+  if (!intRaw && decPart === null) { el.value = ''; return; }
+  if (!intRaw) { el.value = '0,' + decPart; return; }
 
-  // Formatear parte entera con puntos de miles
-  const intFormatted = parseInt(intPart, 10).toLocaleString('es-AR').replace(/,/g, '.');
+  // Formatear miles con punto
+  const n = parseInt(intRaw, 10);
+  const intFmt = n.toLocaleString('es-AR').replace(/,/g, '.');
 
-  if (decPart !== null) {
-    el.value = intFormatted + ',' + decPart;
-  } else {
-    el.value = intFormatted;
-  }
-
-  // Restaurar posición del cursor aproximada
-  const lengthAfter = el.value.length;
-  const newPos = cursorPos + (lengthAfter - lengthBefore);
-  try { el.setSelectionRange(newPos, newPos); } catch(e) {}
+  el.value = decPart !== null ? intFmt + ',' + decPart : intFmt;
 }
+
 function getMoneyVal(id) {
   const el = document.getElementById(id);
   if (!el) return 0;
