@@ -1053,17 +1053,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="sc-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSC(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-cambio"></canvas><span class="sig-placeholder" id="ph-auditor-suc-cambio">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-cambio','ph-auditor-suc-cambio')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sc-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-cambio"></canvas><span class="sig-placeholder" id="ph-auditado-suc-cambio">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-cambio','ph-auditado-suc-cambio')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="sc-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-cambio"></canvas><span class="sig-placeholder" id="ph-auditor-suc-cambio">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-cambio','ph-auditor-suc-cambio')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sc-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1101,17 +1101,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     <div class="form-group"><label>Observaciones</label><textarea id="sg-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-gastos"></canvas><span class="sig-placeholder" id="ph-auditor-suc-gastos">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-gastos','ph-auditor-suc-gastos')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sg-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-gastos"></canvas><span class="sig-placeholder" id="ph-auditado-suc-gastos">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-gastos','ph-auditado-suc-gastos')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="sg-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-gastos"></canvas><span class="sig-placeholder" id="ph-auditor-suc-gastos">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-gastos','ph-auditor-suc-gastos')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sg-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1146,17 +1146,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="sr-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSR(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-reserva"></canvas><span class="sig-placeholder" id="ph-auditor-suc-reserva">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-reserva','ph-auditor-suc-reserva')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sr-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma Auditado 1</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-reserva"></canvas><span class="sig-placeholder" id="ph-auditado-suc-reserva">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-reserva','ph-auditado-suc-reserva')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado 1</label><input type="text" id="sr-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-reserva"></canvas><span class="sig-placeholder" id="ph-auditor-suc-reserva">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-reserva','ph-auditor-suc-reserva')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sr-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
     <div class="form-group">
       <label>Firma Auditado 2</label>
       <div class="sig-wrapper"><canvas id="sig-auditado2-suc-reserva"></canvas><span class="sig-placeholder" id="ph-auditado2-suc-reserva">✍ Firmar aquí</span></div>
@@ -1202,17 +1202,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="scs-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSCS(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-cajasuc"></canvas><span class="sig-placeholder" id="ph-auditor-suc-cajasuc">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-cajasuc','ph-auditor-suc-cajasuc')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="scs-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-cajasuc"></canvas><span class="sig-placeholder" id="ph-auditado-suc-cajasuc">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-cajasuc','ph-auditado-suc-cajasuc')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="scs-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-cajasuc"></canvas><span class="sig-placeholder" id="ph-auditor-suc-cajasuc">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-cajasuc','ph-auditor-suc-cajasuc')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="scs-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1252,17 +1252,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="satm-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSATM(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-atm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-atm">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-atm','ph-auditor-suc-atm')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="satm-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-atm"></canvas><span class="sig-placeholder" id="ph-auditado-suc-atm">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-atm','ph-auditado-suc-atm')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="satm-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-atm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-atm">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-atm','ph-auditor-suc-atm')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="satm-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1301,17 +1301,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="aat-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosAAT(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-aat"></canvas><span class="sig-placeholder" id="ph-auditor-aat">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-aat','ph-auditor-aat')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="aat-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-aat"></canvas><span class="sig-placeholder" id="ph-auditado-aat">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-aat','ph-auditado-aat')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="aat-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-aat"></canvas><span class="sig-placeholder" id="ph-auditor-aat">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-aat','ph-auditor-aat')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="aat-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('agentes');renderHistoryAgentes()">Cancelar</button>
@@ -1349,17 +1349,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="ate-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosATE(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-ate"></canvas><span class="sig-placeholder" id="ph-auditor-ate">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-ate','ph-auditor-ate')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="ate-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-ate"></canvas><span class="sig-placeholder" id="ph-auditado-ate">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-ate','ph-auditado-ate')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="ate-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-ate"></canvas><span class="sig-placeholder" id="ph-auditor-ate">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-ate','ph-auditor-ate')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="ate-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('agentes');renderHistoryAgentes()">Cancelar</button>
@@ -1397,17 +1397,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="ste-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSTE(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-tesoroatm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-tesoroatm">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-tesoroatm','ph-auditor-suc-tesoroatm')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="ste-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-tesoroatm"></canvas><span class="sig-placeholder" id="ph-auditado-suc-tesoroatm">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-tesoroatm','ph-auditado-suc-tesoroatm')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="ste-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-tesoroatm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-tesoroatm">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-tesoroatm','ph-auditor-suc-tesoroatm')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="ste-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1443,17 +1443,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="sra-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSRA(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-remesaatm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-remesaatm">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-remesaatm','ph-auditor-suc-remesaatm')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sra-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-remesaatm"></canvas><span class="sig-placeholder" id="ph-auditado-suc-remesaatm">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-remesaatm','ph-auditado-suc-remesaatm')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="sra-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-remesaatm"></canvas><span class="sig-placeholder" id="ph-auditor-suc-remesaatm">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-remesaatm','ph-auditor-suc-remesaatm')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sra-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1487,17 +1487,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="srb-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSRB(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-remesabanco"></canvas><span class="sig-placeholder" id="ph-auditor-suc-remesabanco">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-remesabanco','ph-auditor-suc-remesabanco')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="srb-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-remesabanco"></canvas><span class="sig-placeholder" id="ph-auditado-suc-remesabanco">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-remesabanco','ph-auditado-suc-remesabanco')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="srb-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-remesabanco"></canvas><span class="sig-placeholder" id="ph-auditor-suc-remesabanco">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-remesabanco','ph-auditor-suc-remesabanco')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="srb-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1531,17 +1531,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="sd-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSD(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-depositos"></canvas><span class="sig-placeholder" id="ph-auditor-suc-depositos">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-depositos','ph-auditor-suc-depositos')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sd-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-depositos"></canvas><span class="sig-placeholder" id="ph-auditado-suc-depositos">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-depositos','ph-auditado-suc-depositos')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="sd-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-depositos"></canvas><span class="sig-placeholder" id="ph-auditor-suc-depositos">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-depositos','ph-auditor-suc-depositos')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sd-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1594,17 +1594,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <input type="file" id="sseg-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosSSEG(event)">
     </div>
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper"><canvas id="sig-auditor-suc-seguridad"></canvas><span class="sig-placeholder" id="ph-auditor-suc-seguridad">✍ Firmar aquí</span></div>
-      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-seguridad','ph-auditor-suc-seguridad')">BORRAR</button></div>
-    </div>
-    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sseg-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper"><canvas id="sig-auditado-suc-seguridad"></canvas><span class="sig-placeholder" id="ph-auditado-suc-seguridad">✍ Firmar aquí</span></div>
       <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditado-suc-seguridad','ph-auditado-suc-seguridad')">BORRAR</button></div>
     </div>
     <div class="form-group"><label>Nombre y DNI Auditado</label><input type="text" id="sseg-auditado-nombre" placeholder="Ingrese Nombre y DNI"></div>
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper"><canvas id="sig-auditor-suc-seguridad"></canvas><span class="sig-placeholder" id="ph-auditor-suc-seguridad">✍ Firmar aquí</span></div>
+      <div class="sig-controls"><button class="btn-sm" onclick="clearSig('sig-auditor-suc-seguridad','ph-auditor-suc-seguridad')">BORRAR</button></div>
+    </div>
+    <div class="form-group"><label>Nombre y DNI Auditor</label><input type="text" id="sseg-auditor-nombre" placeholder="Ingrese Nombre y DNI"></div>
   </div>
   <div class="form-footer">
     <button class="btn-secondary" onclick="showScreen('sucursales');renderHistorySuc()">Cancelar</button>
@@ -1675,21 +1675,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
 
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper">
-        <canvas id="sig-auditor-arqueo"></canvas>
-        <span class="sig-placeholder" id="ph-auditor-arqueo">✍ Firmar aquí</span>
-      </div>
-      <div class="sig-controls">
-        <button class="btn-sm" onclick="clearSig('sig-auditor-arqueo','ph-auditor-arqueo')">BORRAR</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Nombre y DNI Auditor</label>
-      <input type="text" id="a-auditor-nombre" placeholder="Ingrese Nombre y DNI">
-    </div>
-
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper">
         <canvas id="sig-auditado-arqueo"></canvas>
@@ -1702,6 +1687,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     <div class="form-group">
       <label>Nombre y DNI Auditado</label>
       <input type="text" id="a-auditado-nombre" placeholder="Ingrese Nombre y DNI">
+    </div>
+
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper">
+        <canvas id="sig-auditor-arqueo"></canvas>
+        <span class="sig-placeholder" id="ph-auditor-arqueo">✍ Firmar aquí</span>
+      </div>
+      <div class="sig-controls">
+        <button class="btn-sm" onclick="clearSig('sig-auditor-arqueo','ph-auditor-arqueo')">BORRAR</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nombre y DNI Auditor</label>
+      <input type="text" id="a-auditor-nombre" placeholder="Ingrese Nombre y DNI">
     </div>
   </div>
 
@@ -1755,21 +1755,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
 
     <div class="form-group">
-      <label>Firma del Auditor</label>
-      <div class="sig-wrapper">
-        <canvas id="sig-auditor-entrega"></canvas>
-        <span class="sig-placeholder" id="ph-auditor-entrega">✍ Firmar aquí</span>
-      </div>
-      <div class="sig-controls">
-        <button class="btn-sm" onclick="clearSig('sig-auditor-entrega','ph-auditor-entrega')">BORRAR</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Nombre y DNI Auditor</label>
-      <input type="text" id="e-auditor-nombre" placeholder="Ingrese Nombre y DNI">
-    </div>
-
-    <div class="form-group">
       <label>Firma del Auditado</label>
       <div class="sig-wrapper">
         <canvas id="sig-auditado-entrega"></canvas>
@@ -1782,6 +1767,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     <div class="form-group">
       <label>Nombre y DNI Auditado</label>
       <input type="text" id="e-auditado-nombre" placeholder="Ingrese Nombre y DNI">
+    </div>
+
+    <div class="form-group">
+      <label>Firma del Auditor</label>
+      <div class="sig-wrapper">
+        <canvas id="sig-auditor-entrega"></canvas>
+        <span class="sig-placeholder" id="ph-auditor-entrega">✍ Firmar aquí</span>
+      </div>
+      <div class="sig-controls">
+        <button class="btn-sm" onclick="clearSig('sig-auditor-entrega','ph-auditor-entrega')">BORRAR</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nombre y DNI Auditor</label>
+      <input type="text" id="e-auditor-nombre" placeholder="Ingrese Nombre y DNI">
     </div>
   </div>
 
