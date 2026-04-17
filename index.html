@@ -2073,36 +2073,80 @@ function fmt(n) { return n.toLocaleString('es-AR', { minimumFractionDigits: 2 })
 // ══ SEPARADOR DE MILES ══
 function parseMoney(val) {
   const s = String(val).trim();
-  // Soporta: 1.234.567,89 | 1234567,89 | 1234567.89 | 1.234.567
+  // Acepta: 1.234,56 | 1.234.567 | 1234,56 | 1234.56
+  // Regla: si hay coma -> decimal es coma, puntos son miles
+  //        si solo hay punto -> puede ser decimal (1234.56) o miles (1.234)
+  //        si hay punto Y coma -> punto=miles, coma=decimal
   if (s.includes(',')) {
     return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
   }
-  return parseFloat(s.replace(/\./g, '')) || 0;
+  // Solo puntos: si el punto tiene exactamente 2 o 1 dígitos después, es decimal
+  const dotIdx = s.lastIndexOf('.');
+  if (dotIdx !== -1) {
+    const afterDot = s.substring(dotIdx + 1);
+    if (afterDot.length <= 2) {
+      // Tratar como decimal: 1234.56 -> 1234.56
+      return parseFloat(s) || 0;
+    }
+    // Más de 2 dígitos después del punto -> es separador de miles: 1.234.567
+    return parseFloat(s.replace(/\./g, '')) || 0;
+  }
+  return parseFloat(s) || 0;
 }
 
 function onMoneyInput(el) {
   const raw = el.value;
+  const cursor = el.selectionStart;
+  const lenBefore = raw.length;
 
-  // Detectar si hay coma (separador decimal)
+  // Detectar separador decimal: puede ser coma O punto
+  // Tomamos el ÚLTIMO punto o coma como posible decimal
   const commaIdx = raw.lastIndexOf(',');
-  let intRaw, decPart;
+  const dotIdx = raw.lastIndexOf('.');
 
-  if (commaIdx !== -1) {
-    intRaw = raw.substring(0, commaIdx).replace(/[^0-9]/g, '');
-    decPart = raw.substring(commaIdx + 1).replace(/[^0-9]/g, '').substring(0, 2);
+  // El separador decimal es el que aparece más a la derecha, 
+  // siempre que tenga <= 2 dígitos después
+  let sepIdx = -1;
+  let sepChar = null;
+
+  const lastSep = Math.max(commaIdx, dotIdx);
+  if (lastSep !== -1) {
+    const afterSep = raw.substring(lastSep + 1).replace(/[^0-9]/g, '');
+    if (afterSep.length <= 2) {
+      sepIdx = lastSep;
+      sepChar = raw[lastSep];
+    }
+  }
+
+  let intRaw, decPart;
+  if (sepIdx !== -1) {
+    intRaw = raw.substring(0, sepIdx).replace(/[^0-9]/g, '');
+    decPart = raw.substring(sepIdx + 1).replace(/[^0-9]/g, '').substring(0, 2);
   } else {
     intRaw = raw.replace(/[^0-9]/g, '');
     decPart = null;
   }
 
   if (!intRaw && decPart === null) { el.value = ''; return; }
-  if (!intRaw) { el.value = '0,' + decPart; return; }
+  if (!intRaw) { el.value = '0,' + (decPart || ''); return; }
 
-  // Formatear miles con punto
+  // Formatear miles con punto (estilo argentino)
   const n = parseInt(intRaw, 10);
   const intFmt = n.toLocaleString('es-AR').replace(/,/g, '.');
 
-  el.value = decPart !== null ? intFmt + ',' + decPart : intFmt;
+  // Siempre mostrar decimal con COMA (aunque el usuario haya escrito punto)
+  if (sepIdx !== -1) {
+    el.value = intFmt + ',' + decPart;
+  } else {
+    el.value = intFmt;
+  }
+
+  // Restaurar cursor
+  try {
+    const lenAfter = el.value.length;
+    const newPos = Math.max(0, cursor + (lenAfter - lenBefore));
+    el.setSelectionRange(newPos, newPos);
+  } catch(e) {}
 }
 
 function getMoneyVal(id) {
