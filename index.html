@@ -1036,13 +1036,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="detail-section-title">BILLETES</div>
     <div id="sc-billetes-wrap"></div>
-    <div class="form-group"><label>Monedas ($)</label><input type="number" id="sc-monedas" placeholder="0" inputmode="decimal" oninput="calcCambio()"></div>
-    <div class="form-group"><label>Deteriorados ($)</label><input type="number" id="sc-deteriorados" placeholder="0" inputmode="decimal" oninput="calcCambio()"></div>
+    <div class="form-group"><label>Monedas ($)</label><input type="text" id="sc-monedas" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></div>
+    <div class="form-group"><label>Deteriorados ($)</label><input type="text" id="sc-deteriorados" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></div>
     <div class="totals-box">
       <div class="trow"><span class="tlabel">SUBTOTAL RECONTADO</span><span class="tval" id="sc-subtotal">$0,00</span></div>
-      <div class="trow"><span class="tlabel">POSICION DEL TESORO</span><span class="tval"><input type="number" id="sc-tesoro" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" oninput="calcCambio()"></span></div>
-      <div class="trow"><span class="tlabel">INICIO DE CAJA</span><span class="tval"><input type="number" id="sc-inicio" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" oninput="calcCambio()"></span></div>
-      <div class="trow"><span class="tlabel">GASTOS</span><span class="tval"><input type="number" id="sc-gastos" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" oninput="calcCambio()"></span></div>
+      <div class="trow"><span class="tlabel">POSICION DEL TESORO</span><span class="tval"><input type="text" id="sc-tesoro" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
+      <div class="trow"><span class="tlabel">INICIO DE CAJA</span><span class="tval"><input type="text" id="sc-inicio" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
+      <div class="trow"><span class="tlabel">GASTOS</span><span class="tval"><input type="text" id="sc-gastos" placeholder="0" style="background:transparent;border:none;color:var(--text);width:120px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCambio()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sc-dif">—</span></div>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sc-obs" placeholder="Observaciones..."></textarea></div>
@@ -1134,8 +1134,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <div class="form-group"><label>Hora</label><input type="time" id="sr-hora"></div>
     </div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="number" id="sr-recontado" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" oninput="calcReserva()"></span></div>
-      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="number" id="sr-esperado" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" oninput="calcReserva()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="text" id="sr-recontado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcReserva()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="text" id="sr-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:140px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcReserva()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sr-dif">—</span></div>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="sr-obs" placeholder="Observaciones..."></textarea></div>
@@ -1186,13 +1186,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="detail-section-title">BILLETES</div>
     <div id="scs-billetes-wrap"></div>
-    <div class="form-group"><label>Monedas ($)</label><input type="number" id="scs-monedas" placeholder="0" inputmode="decimal" oninput="calcCajaSuc()"></div>
-    <div class="form-group"><label>Deteriorados ($)</label><input type="number" id="scs-deteriorados" placeholder="0" inputmode="decimal" oninput="calcCajaSuc()"></div>
+    <div class="form-group"><label>Monedas ($)</label><input type="text" id="scs-monedas" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></div>
+    <div class="form-group"><label>Deteriorados ($)</label><input type="text" id="scs-deteriorados" placeholder="0" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></div>
     <div class="totals-box">
       <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval" id="scs-recontado-display">$0,00</span></div>
-      <div class="trow"><span class="tlabel">CIERRE DE CAJA</span><span class="tval"><input type="number" id="scs-cierre" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" oninput="calcCajaSuc()"></span></div>
+      <div class="trow"><span class="tlabel">CIERRE DE CAJA</span><span class="tval"><input type="text" id="scs-cierre" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcCajaSuc()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="scs-dif">—</span></div>
-      <div class="trow"><span class="tlabel">RETIROS NO ENTREGADOS</span><span class="tval"><input type="number" id="scs-retiros" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)"></span></div>
+      <div class="trow"><span class="tlabel">RETIROS NO ENTREGADOS</span><span class="tval"><input type="text" id="scs-retiros" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
     </div>
     <div class="form-group"><label>Observaciones</label><textarea id="scs-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
@@ -1387,7 +1387,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="detail-section-title">NO APTOS ATM</div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">TOTAL NO APTOS</span><span class="tval"><input type="number" id="ste-noaptos" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL NO APTOS</span><span class="tval"><input type="text" id="ste-noaptos" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="ste-obs" placeholder="Observaciones..."></textarea></div>
     <div class="form-group">
@@ -1432,7 +1432,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     <div id="sra-billetes-wrap"></div>
     <div class="totals-box">
       <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval" id="sra-recontado-display">$0,00</span></div>
-      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="number" id="sra-esperado" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" oninput="calcRemesaATM()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="text" id="sra-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcRemesaATM()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sra-dif">—</span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="sra-obs" placeholder="Observaciones..."></textarea></div>
@@ -1475,8 +1475,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <div class="form-group"><label>Hora</label><input type="time" id="srb-hora"></div>
     </div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">CANTIDAD DE BALAS</span><span class="tval"><input type="number" id="srb-balas" placeholder="0" inputmode="numeric" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)"></span></div>
-      <div class="trow"><span class="tlabel">IMPORTE PRESUMIBLE TOTAL</span><span class="tval"><input type="number" id="srb-importe" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)"></span></div>
+      <div class="trow"><span class="tlabel">CANTIDAD DE BALAS</span><span class="tval"><input type="text" id="srb-balas" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
+      <div class="trow"><span class="tlabel">IMPORTE PRESUMIBLE TOTAL</span><span class="tval"><input type="text" id="srb-importe" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this)"></span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Lugar de Resguardo de los Valores</label><input type="text" id="srb-lugar" placeholder="Descripción del lugar"></div>
     <div class="form-group"><label>Observaciones</label><textarea id="srb-obs" placeholder="Observaciones..."></textarea></div>
@@ -1519,8 +1519,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
       <div class="form-group"><label>Hora</label><input type="time" id="sd-hora"></div>
     </div>
     <div class="totals-box">
-      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="number" id="sd-recontado" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" oninput="calcDepositos()"></span></div>
-      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="number" id="sd-esperado" placeholder="0" inputmode="decimal" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" oninput="calcDepositos()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL RECONTADO</span><span class="tval"><input type="text" id="sd-recontado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcDepositos()"></span></div>
+      <div class="trow"><span class="tlabel">TOTAL ESPERADO</span><span class="tval"><input type="text" id="sd-esperado" placeholder="0" style="background:transparent;border:none;color:var(--text);width:130px;text-align:right;font-family:var(--mono)" inputmode="decimal" oninput="onMoneyInput(this);calcDepositos()"></span></div>
       <div class="trow"><span class="tlabel">DIFERENCIA</span><span class="tval" id="sd-dif">—</span></div>
     </div>
     <div class="form-group" style="margin-top:16px"><label>Observaciones</label><textarea id="sd-obs" placeholder="Observaciones..."></textarea></div>
@@ -1647,11 +1647,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     <div class="form-group">
       <label>Total Recontado ($)</label>
-      <input type="number" id="a-recontado" placeholder="0.00" inputmode="decimal" oninput="calcDif()">
+      <input type="text" id="a-recontado" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this);calcDif()">
     </div>
     <div class="form-group">
       <label>Cierre de Caja ($)</label>
-      <input type="number" id="a-cierre" placeholder="0.00" inputmode="decimal" oninput="calcDif()">
+      <input type="text" id="a-cierre" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this);calcDif()">
     </div>
 
     <div class="totals-box">
@@ -1740,7 +1740,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     </div>
     <div class="form-group">
       <label>Total Entregado ($)</label>
-      <input type="number" id="e-total" placeholder="0.00" inputmode="decimal">
+      <input type="text" id="e-total" placeholder="0.00" inputmode="decimal" oninput="onMoneyInput(this)">
     </div>
     <div class="form-group">
       <label>Observaciones</label>
@@ -2059,8 +2059,8 @@ function removeFoto(wrapId, i) {
 
 // ══ CALC DIFERENCIA ══
 function calcDif() {
-  const r = parseFloat(document.getElementById('a-recontado').value) || 0;
-  const c = parseFloat(document.getElementById('a-cierre').value) || 0;
+  const r = getMoneyVal('a-recontado');
+  const c = getMoneyVal('a-cierre');
   const dif = r - c;
   const el = document.getElementById('a-dif-display');
   document.getElementById('a-diferencia').value = dif;
@@ -2069,6 +2069,61 @@ function calcDif() {
   else { el.textContent = '-$' + fmt(Math.abs(dif)); el.className = 'tval neg'; }
 }
 function fmt(n) { return n.toLocaleString('es-AR', { minimumFractionDigits: 2 }); }
+
+// ══ SEPARADOR DE MILES ══
+function parseMoney(val) {
+  // Formato: 1.234.567,89 -> 1234567.89
+  const s = String(val).trim();
+  const hasComma = s.includes(',');
+  if (hasComma) {
+    // Separador decimal = coma, miles = punto
+    return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+  } else {
+    // Solo entero con puntos de miles
+    return parseFloat(s.replace(/\./g, '')) || 0;
+  }
+}
+function onMoneyInput(el) {
+  const val = el.value;
+  const cursorPos = el.selectionStart;
+  const lengthBefore = val.length;
+
+  // Separar parte entera y decimal
+  // El usuario escribe con coma como separador decimal
+  const commaIdx = val.lastIndexOf(',');
+
+  let intPart, decPart;
+  if (commaIdx !== -1) {
+    intPart = val.substring(0, commaIdx).replace(/[^0-9]/g, '');
+    decPart = val.substring(commaIdx + 1).replace(/[^0-9]/g, '').substring(0, 2);
+  } else {
+    intPart = val.replace(/[^0-9]/g, '');
+    decPart = null;
+  }
+
+  if (intPart === '' && decPart === null) { el.value = ''; return; }
+  if (intPart === '' && decPart !== null) { el.value = '0,' + decPart; return; }
+
+  // Formatear parte entera con puntos de miles
+  const intFormatted = parseInt(intPart, 10).toLocaleString('es-AR').replace(/,/g, '.');
+
+  if (decPart !== null) {
+    el.value = intFormatted + ',' + decPart;
+  } else {
+    el.value = intFormatted;
+  }
+
+  // Restaurar posición del cursor aproximada
+  const lengthAfter = el.value.length;
+  const newPos = cursorPos + (lengthAfter - lengthBefore);
+  try { el.setSelectionRange(newPos, newPos); } catch(e) {}
+}
+function getMoneyVal(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  return parseMoney(el.value);
+}
+
 
 // ══ SIGNATURE ══
 function initSig(canvasId, phId) {
@@ -2145,8 +2200,8 @@ function saveArqueo() {
     puesto: document.getElementById('a-puesto').value.trim(),
     fecha: document.getElementById('a-fecha').value,
     hora: document.getElementById('a-hora').value,
-    recontado: document.getElementById('a-recontado').value,
-    cierre: document.getElementById('a-cierre').value,
+    recontado: String(getMoneyVal('a-recontado')),
+    cierre: String(getMoneyVal('a-cierre')),
     diferencia: document.getElementById('a-diferencia').value,
     obs: document.getElementById('a-obs').value.trim(),
     auditorNombre: document.getElementById('a-auditor-nombre').value.trim(),
@@ -2171,7 +2226,7 @@ function saveArqueo() {
 // ══ SAVE ENTREGA ══
 function saveEntrega() {
   const agente = document.getElementById('e-agente').value.trim();
-  const total = document.getElementById('e-total').value;
+  const total = String(getMoneyVal('e-total'));
   if (!agente || !total) { showToast('Completá agente y total', 'error'); return; }
 
   const record = {
@@ -2348,8 +2403,8 @@ function openDetail(id) {
         </div>
         ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
         <div class="detail-section-title">FIRMAS</div>
-        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${fotosHTML}`;
       showScreen('detail'); return;
     }
@@ -2374,8 +2429,8 @@ function openDetail(id) {
         </div>
         ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
         <div class="detail-section-title">FIRMAS</div>
-        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${fotosHTML}`;
       showScreen('detail'); return;
     }
@@ -2397,8 +2452,8 @@ function openDetail(id) {
         </div>
         ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
         <div class="detail-section-title">FIRMAS</div>
-        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${fotosHTML}`;
       showScreen('detail'); return;
     }
@@ -2424,8 +2479,8 @@ function openDetail(id) {
         </div>
         ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
         <div class="detail-section-title">FIRMAS</div>
-        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${fotosHTML}`;
     } else {
       body.innerHTML = `
@@ -2443,8 +2498,8 @@ function openDetail(id) {
         </div>
         ${r.obs ? `<div class="detail-field"><div class="df-label">Observaciones</div><div class="df-val">${r.obs}</div></div>` : ''}
         <div class="detail-section-title">FIRMAS</div>
-        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${sigPreview('Auditado', r.auditadoNombre, r.sigAuditado)}
+        ${sigPreview('Auditor', r.auditorNombre, r.sigAuditor)}
         ${fotosHTML}`;
     }
     showScreen('detail');
@@ -2856,33 +2911,33 @@ function openSucForm(type) {
 // calculators
 function calcCambio() {
   const bil = sumBilletes('sc', BILLETES_STD);
-  const mon = parseFloat(document.getElementById('sc-monedas')?.value) || 0;
-  const det = parseFloat(document.getElementById('sc-deteriorados')?.value) || 0;
+  const mon = getMoneyVal('sc-monedas');
+  const det = getMoneyVal('sc-deteriorados');
   const sub = bil + mon + det;
   const subEl = document.getElementById('sc-subtotal');
   if (subEl) subEl.textContent = '$' + fmt(sub);
-  const tes = parseFloat(document.getElementById('sc-tesoro')?.value) || 0;
-  const ini = parseFloat(document.getElementById('sc-inicio')?.value) || 0;
-  const gas = parseFloat(document.getElementById('sc-gastos')?.value) || 0;
+  const tes = getMoneyVal('sc-tesoro');
+  const ini = getMoneyVal('sc-inicio');
+  const gas = getMoneyVal('sc-gastos');
   const dif = sub - tes - ini - gas;
   const el = document.getElementById('sc-dif');
   if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcCajaSuc() {
   const bil = sumBilletes('scs', BILLETES_STD);
-  const mon = parseFloat(document.getElementById('scs-monedas')?.value) || 0;
-  const det = parseFloat(document.getElementById('scs-deteriorados')?.value) || 0;
+  const mon = getMoneyVal('scs-monedas');
+  const det = getMoneyVal('scs-deteriorados');
   const tot = bil + mon + det;
   const rEl = document.getElementById('scs-recontado-display');
   if (rEl) rEl.textContent = '$' + fmt(tot);
-  const cie = parseFloat(document.getElementById('scs-cierre')?.value) || 0;
+  const cie = getMoneyVal('scs-cierre');
   const dif = tot - cie;
   const el = document.getElementById('scs-dif');
   if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcReserva() {
-  const r = parseFloat(document.getElementById('sr-recontado')?.value) || 0;
-  const e = parseFloat(document.getElementById('sr-esperado')?.value) || 0;
+  const r = getMoneyVal('sr-recontado');
+  const e = getMoneyVal('sr-esperado');
   const dif = r - e;
   const el = document.getElementById('sr-dif');
   if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
@@ -2904,14 +2959,14 @@ function calcRemesaATM() {
   const tot = sumBilletes('sra', [20000, 10000, 2000, 1000, 500, 200, 100]);
   const rEl = document.getElementById('sra-recontado-display');
   if (rEl) rEl.textContent = '$' + fmt(tot);
-  const esp = parseFloat(document.getElementById('sra-esperado')?.value) || 0;
+  const esp = getMoneyVal('sra-esperado');
   const dif = tot - esp;
   const el = document.getElementById('sra-dif');
   if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
 function calcDepositos() {
-  const r = parseFloat(document.getElementById('sd-recontado')?.value) || 0;
-  const e = parseFloat(document.getElementById('sd-esperado')?.value) || 0;
+  const r = getMoneyVal('sd-recontado');
+  const e = getMoneyVal('sd-esperado');
   const dif = r - e;
   const el = document.getElementById('sd-dif');
   if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
@@ -3011,11 +3066,11 @@ function saveSucForm(type) {
 
   if (type === 'cambio') {
     base.billetes = getBilletesData('sc', BILLETES_STD);
-    base.monedas = document.getElementById('sc-monedas')?.value || '0';
-    base.deteriorados = document.getElementById('sc-deteriorados')?.value || '0';
-    base.tesoro = document.getElementById('sc-tesoro')?.value || '0';
-    base.inicio = document.getElementById('sc-inicio')?.value || '0';
-    base.gastos2 = document.getElementById('sc-gastos')?.value || '0';
+    base.monedas = String(getMoneyVal('sc-monedas'));
+    base.deteriorados = String(getMoneyVal('sc-deteriorados'));
+    base.tesoro = String(getMoneyVal('sc-tesoro'));
+    base.inicio = String(getMoneyVal('sc-inicio'));
+    base.gastos2 = String(getMoneyVal('sc-gastos'));
   }
   if (type === 'gastos') {
     base.comprobantes = [...sgComprobantes];
@@ -3023,18 +3078,18 @@ function saveSucForm(type) {
     base.totalComprobantes = sgComprobantes.reduce((a, c) => a + (parseFloat(c.importe) || 0), 0);
   }
   if (type === 'reserva') {
-    base.recontado = document.getElementById('sr-recontado')?.value || '0';
-    base.esperado = document.getElementById('sr-esperado')?.value || '0';
+    base.recontado = String(getMoneyVal('sr-recontado'));
+    base.esperado = String(getMoneyVal('sr-esperado'));
     base.cajero2 = document.getElementById('sr-cajero2')?.value.trim() || '';
     base.sigAuditado2 = getSigDataSmall('sig-auditado2-suc-reserva');
     base.auditado2Nombre = document.getElementById('sr-auditado2-nombre')?.value.trim() || '';
   }
   if (type === 'cajasuc') {
     base.billetes = getBilletesData('scs', BILLETES_STD);
-    base.monedas = document.getElementById('scs-monedas')?.value || '0';
-    base.deteriorados = document.getElementById('scs-deteriorados')?.value || '0';
-    base.cierre = document.getElementById('scs-cierre')?.value || '0';
-    base.retiros = document.getElementById('scs-retiros')?.value || '0';
+    base.monedas = String(getMoneyVal('scs-monedas'));
+    base.deteriorados = String(getMoneyVal('scs-deteriorados'));
+    base.cierre = String(getMoneyVal('scs-cierre'));
+    base.retiros = String(getMoneyVal('scs-retiros'));
     base.puesto = document.getElementById('scs-puesto')?.value || '';
   }
   if (type === 'atm') {
@@ -3044,21 +3099,21 @@ function saveSucForm(type) {
   }
   if (type === 'tesoroatm') {
     base.aptosBilletes = getBilletesData('ste', [20000, 10000, 2000, 1000, 500, 200, 100]);
-    base.noAptos = document.getElementById('ste-noaptos')?.value || '0';
+    base.noAptos = String(getMoneyVal('ste-noaptos'));
   }
   if (type === 'remesaatm') {
     base.billetes = getBilletesData('sra', [20000, 10000, 2000, 1000, 500, 200, 100]);
-    base.esperado = document.getElementById('sra-esperado')?.value || '0';
+    base.esperado = String(getMoneyVal('sra-esperado'));
     base.recontado = String(sumBilletes('sra', [20000, 10000, 2000, 1000, 500, 200, 100]));
   }
   if (type === 'remesabanco') {
-    base.balas = document.getElementById('srb-balas')?.value || '0';
-    base.importe = document.getElementById('srb-importe')?.value || '0';
+    base.balas = String(getMoneyVal('srb-balas'));
+    base.importe = String(getMoneyVal('srb-importe'));
     base.lugar = document.getElementById('srb-lugar')?.value.trim() || '';
   }
   if (type === 'depositos') {
-    base.recontado = document.getElementById('sd-recontado')?.value || '0';
-    base.esperado = document.getElementById('sd-esperado')?.value || '0';
+    base.recontado = String(getMoneyVal('sd-recontado'));
+    base.esperado = String(getMoneyVal('sd-esperado'));
   }
   if (type === 'seguridad') {
     base.checks = Array.from({ length: 16 }, (_, i) => document.getElementById(`sseg-c${i + 1}`)?.checked || false);
