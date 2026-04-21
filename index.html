@@ -427,6 +427,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     --mono: 'DM Mono', monospace;
   }
 
+  :root.light {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #f5f6fa;
+    --border: #dde1ea;
+    --accent: #e94560;
+    --accent2: #dde8ff;
+    --accent3: #f5a623;
+    --text: #1a1a2e;
+    --text2: #6b7280;
+    --green: #00a878;
+    --red: #e94560;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
@@ -895,7 +909,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
 <header class="app-header">
   <div class="logo">gire<span>·</span>audit</div>
-  <div class="header-badge">OFFLINE</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="header-badge">OFFLINE</div>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Cambiar tema"
+      style="background:transparent;border:none;font-size:20px;cursor:pointer;padding:4px 6px;line-height:1;color:var(--text2)">🌙</button>
+  </div>
 </header>
 
 <!-- ══════ HOME ══════ -->
@@ -2147,7 +2165,7 @@ function initSig(canvasId, phId) {
   canvas.width = (rect.width || 300) * window.devicePixelRatio;
   canvas.height = 140 * window.devicePixelRatio;
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  ctx.strokeStyle = '#e8e8f0';
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#e8e8f0';
   ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -3338,7 +3356,25 @@ function installApp() {
 }
 
 // ══ INIT ══
-document.addEventListener('DOMContentLoaded', () => { renderHistory(); });
+// ══ TEMA ══
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('gire_theme', isLight ? 'light' : 'dark');
+  updateThemeBtn();
+}
+function updateThemeBtn() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const isLight = document.documentElement.classList.contains('light');
+  btn.textContent = isLight ? '☀️' : '🌙';
+}
+function loadTheme() {
+  const saved = localStorage.getItem('gire_theme');
+  if (saved === 'light') document.documentElement.classList.add('light');
+  updateThemeBtn();
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadTheme(); renderHistory(); });
 </script>
 </body>
 </html>
