@@ -2969,7 +2969,8 @@ function calcCambio() {
   const tes = getMoneyVal('sc-tesoro');
   const ini = getMoneyVal('sc-inicio');
   const gas = getMoneyVal('sc-gastos');
-  const dif = sub - tes - ini - gas;
+  // DIFERENCIA = (SUBTOTAL RECONTADO + INICIO DE CAJA) - POSICION DEL TESORO
+  const dif = sub + ini - tes;
   const el = document.getElementById('sc-dif');
   if (el) { el.textContent = (dif >= 0 ? '+' : '') + '$' + fmt(dif); el.className = 'tval ' + (dif === 0 ? 'zero' : dif > 0 ? 'pos' : 'neg'); }
 }
@@ -3241,11 +3242,14 @@ function generateSucPDF(r) {
   if (r.type === 'suc-cambio') {
     const bil = r.billetes.reduce((a, b) => a + b.imp, 0);
     const sub = bil + (parseFloat(r.monedas) || 0) + (parseFloat(r.deteriorados) || 0);
+    const ini = parseFloat(r.inicio) || 0;
+    const tes = parseFloat(r.tesoro) || 0;
     totalRow('SUBTOTAL RECONTADO', '$' + fmt(sub));
-    totalRow('POSICION DEL TESORO', '$' + fmt(parseFloat(r.tesoro) || 0));
-    totalRow('INICIO DE CAJA', '$' + fmt(parseFloat(r.inicio) || 0));
+    totalRow('POSICION DEL TESORO', '$' + fmt(tes));
+    totalRow('INICIO DE CAJA', '$' + fmt(ini));
     totalRow('GASTOS', '$' + fmt(parseFloat(r.gastos2) || 0));
-    const dif = sub - (parseFloat(r.tesoro) || 0) - (parseFloat(r.inicio) || 0) - (parseFloat(r.gastos2) || 0);
+    // DIFERENCIA = (SUBTOTAL + INICIO) - TESORO
+    const dif = sub + ini - tes;
     totalRow('DIFERENCIA', (dif >= 0 ? '+' : '') + '$' + fmt(dif), dif > 0 ? 'pos' : dif < 0 ? 'neg' : '');
   }
   if (r.type === 'suc-cajasuc') {
