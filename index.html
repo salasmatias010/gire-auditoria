@@ -3214,6 +3214,7 @@ function generateSucPDF(r) {
 
   // common fields
   const fs = [{l:'CENTRO / STAND:', v:r.stand},{l:'CAJERO PRINCIPAL:', v:r.cajero},{l:'FECHA:', v:r.fecha?r.fecha.split('-').reverse().join('/'):'—'},{l:'HORA:', v:r.hora}];
+  if (r.puesto) fs.splice(2,0,{l:'PUESTO DE CAJA:', v:r.puesto});
   if (r.cajero2) fs.splice(2,0,{l:'CAJERO QUE ABRE SUCURSAL:', v:r.cajero2});
   if (r.idAtm) fs.push({l:'ID ATM:', v:r.idAtm});
   if (r.etc) fs.push({l:'EMPRESA TRANSPORTADORA:', v:r.etc});
